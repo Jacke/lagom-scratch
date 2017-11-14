@@ -1,0 +1,16 @@
+# Add any directories, files, or patterns you don't want to be tracked by version control
+target
+ideatarget
+.target
+.cache
+.cache-main
+.cache-tests
+.classpath
+.project
+.tmpBin
+.factorypath
+.settings
+logs
+.idea
+.DS_Store
+
