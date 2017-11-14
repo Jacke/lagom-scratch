@@ -46,6 +46,20 @@ class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegis
     //ref.ask(Hello(test)) // Asset]
     testAsset
   }
+
+  override def updateAsset(id: Int) = ServiceCall { request =>
+    val test:String = "test"
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    //ref.ask(Hello(test)) // Asset]
+    testAsset
+  }
+  override def deleteAsset(id: Int) = ServiceCall { request =>
+    val test:String = "test"
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    //ref.ask(Hello(test)) // Asset]
+    Future(1)
+  }
+
   override def getEntries(assetId: Int) = ServiceCall { request =>
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
@@ -56,19 +70,31 @@ class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegis
   override def createAsset() = ServiceCall { request =>
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    ref.ask(Hello(test))
+    //ref.ask(Hello(test))
+    testAsset
   }
-  override def createAssetEntry(id: String) = ServiceCall { request =>
+  override def createAssetEntry(id: Int) = ServiceCall { request =>
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     ref.ask(Hello(test))
   }
+  override def updateAssetEntry(assetId:Int, id: Int) = ServiceCall { request =>
+    val test:String = "test"
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    ref.ask(Hello(test))    
+  }
+  override def deleteAssetEntry(assetId:Int, id: Int) = ServiceCall { request =>
+    val test:String = "test"
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    ref.ask(Hello(test))    
+  }
+
 // 1.2 The company wants to know when the store was open
-  override def assetAvaliability(assetId: Int) = ServiceCall { request =>
+  override def assetAvailability(assetId: Int) = ServiceCall { request =>
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    //ref.ask(Hello(test)) // AssetAvaliabilityWrapper
-    testAvaliability
+    //ref.ask(Hello(test)) // AssetAvailabilityWrapper
+    testAvailability
   }
 ///////////
 
@@ -82,10 +108,10 @@ private def testEntries = Future(
    List(Entry(1, 2, org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))
 )
 
-private def testAvaliability = Future(
-  AssetAvaliabilityWrapper(1, 
-  List(Avaliability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)),
-       Avaliability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))) )
+private def testAvailability = Future(
+  AssetAvailabilityWrapper(1, 
+  List(Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)),
+       Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))) )
 
   private def convertEvent(helloEvent: EventStreamElement[MicroserviceCalEvent]): api.AssetMessageChanged = {
     helloEvent.event match {

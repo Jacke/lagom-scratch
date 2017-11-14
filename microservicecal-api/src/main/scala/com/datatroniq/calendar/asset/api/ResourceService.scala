@@ -19,10 +19,17 @@ trait AssetService extends Service {
   def getAsset(assetId: Int): ServiceCall[NotUsed, Asset]
   def getEntries(assetId: Int): ServiceCall[NotUsed, List[Entry]]
 
-  def createAsset(): ServiceCall[NotUsed, String]
-  def createAssetEntry(id: String): ServiceCall[NotUsed, String]
+  def createAsset(): ServiceCall[NotUsed, Asset]
+  def updateAsset(id: Int): ServiceCall[NotUsed, Asset]
+  def deleteAsset(id: Int): ServiceCall[NotUsed, Int]
+
+  def createAssetEntry(id: Int): ServiceCall[NotUsed, String]
+  def updateAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, String]
+  def deleteAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, String]
+
+
 // 1.2 The company wants to know when the store was open
-  def assetAvaliability(assetId: Int): ServiceCall[NotUsed, AssetAvaliabilityWrapper]
+  def assetAvailability(assetId: Int): ServiceCall[NotUsed, AssetAvailabilityWrapper]
 
   def useGreeting(id: String): ServiceCall[AssetMessage, Done]
   def greetingsTopic(): Topic[AssetMessageChanged]
@@ -33,13 +40,18 @@ trait AssetService extends Service {
     named("Asset")
       .withCalls(
         restCall(Method.GET, "/api/asset/:id", getAsset _),
-        //restCall(Method.GET, "/api/asset/:id", useGreeting _)
         restCall(Method.GET, "/api/assets",    getAllAssets _),
         restCall(Method.GET, "/api/asset/:id/entries",    getEntries _),
         //1.1 The employee manages the calendar for his book store
         restCall(Method.POST, "/api/asset", createAsset _),
+        restCall(Method.PUT, "/api/asset/:id", updateAsset _),
+        restCall(Method.DELETE, "/api/asset/:id", deleteAsset _),
+/////////////////////////////
         restCall(Method.POST, "/api/asset/:id/entry", createAssetEntry _),
-        restCall(Method.GET, "/api/asset/:id/avaliabilities", assetAvaliability _)
+        restCall(Method.PUT, "/api/asset/:assetId/entry/:id", updateAssetEntry _),
+        restCall(Method.DELETE, "/api/asset/:assetId/entry/:id", deleteAssetEntry _),
+        //1.2 The company wants to know when the store was open
+        restCall(Method.GET, "/api/asset/:id/availabilities", assetAvailability _)
       )
       .withTopics(
         topic(AssetService.TOPIC_NAME, greetingsTopic _)
