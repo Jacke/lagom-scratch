@@ -8,21 +8,23 @@ import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
 import org.joda.time.DateTime
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
-import slick.jdbc.JdbcBackend.Database
 // FOR TEST removeme
 import play.api.libs.json.{Format, Json}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
+import slick.jdbc.JdbcBackend.Database
 
-class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegistry,
-  readSide: com.lightbend.lagom.scaladsl.persistence.ReadSide
-  //entityProcessor: MicroserviceCalEntityProcessor
-  //db: Database
+class MicroserviceCalServiceImpl(
+  persistentEntityRegistry: PersistentEntityRegistry,
+  //repository: MicroserviceCalEntityRepository
+  db: slick.jdbc.JdbcBackend.Database
 ) extends AssetService {
 ///////
 //          Test commands
 ////
   //readSide.register[MicroserviceCalEvent](MicroserviceCalEntityProcessor)
+
 
   override def hello(id: String) = ServiceCall { _ =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](id)

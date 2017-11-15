@@ -7,14 +7,12 @@ import com.datatroniq.calendar.asset.impl._
 import com.datatroniq.calendar.asset.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
-import _root_.slick.jdbc.JdbcBackend.Database
-import _root_.slick.driver.JdbcProfile
 import _root_.slick.driver.PostgresDriver.api._
 import scala.concurrent.ExecutionContext.Implicits.global
-
 //import com.github.tototoshi.slick.PostgresJodaSupport._
 import com.lightbend.lagom.scaladsl.persistence.slick._
 import org.joda.time.DateTime
+import  _root_.slick.jdbc.meta.MTable
 
 class MicroserviceCalEntityRepository {
 class Assets(tag: Tag) extends Table[Asset](tag, "assets") {

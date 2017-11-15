@@ -10,6 +10,9 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import com.datatroniq.calendar.asset.api.AssetService
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.softwaremill.macwire._
+import com.lightbend.lagom.scaladsl.persistence.slick._
+import _root_.slick.jdbc.JdbcBackend.Database
+
 
 class MicroserviceCalLoader extends LagomApplicationLoader {
 

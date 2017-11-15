@@ -22,7 +22,6 @@ lazy val `microservicecal` = (project in file("."))
 lazy val `microservicecal-api` = (project in file("microservicecal-api"))
   .settings(
     libraryDependencies ++= Seq(
-              lagomScaladslPersistenceJdbc,
 lagomScaladslApi    )
   )
 
