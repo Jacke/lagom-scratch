@@ -40,20 +40,20 @@ class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegis
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // List[Asset]]
-    testAssets
+    Future( List(Asset(1, "cab"), Asset(2, "bookstore")) )
   }
   override def getAsset(assetId: Int) = ServiceCall { request =>
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // Asset]
-    testAsset
+     Future( Asset(2, "bookstore") )
   }
 
   override def updateAsset(id: Int) = ServiceCall { request =>
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // Asset]
-    testAsset
+     Future( Asset(2, "bookstore") )
   }
   override def deleteAsset(id: Int) = ServiceCall { request =>
     val test:String = "test"
@@ -66,14 +66,14 @@ class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegis
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // List[Entry]]
-    testEntries
+   List(Entry(1, 2, org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))
   }
 
   override def createAsset() = ServiceCall { request =>
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test))
-    testAsset
+     Future( Asset(2, "bookstore") )
   }
   override def createAssetEntry(id: Int) = ServiceCall { request =>
     val test:String = "test"
@@ -96,24 +96,12 @@ class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegis
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // AssetAvailabilityWrapper
-    testAvailability
-  }
-///////////
-
-private def testAssets = 
-    Future( List(Asset(1, "cab"), Asset(2, "bookstore")) )
-
-private def testAsset = Future(
-   Asset(2, "bookstore") )
-
-private def testEntries = Future(
-   List(Entry(1, 2, org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))
-)
-
-private def testAvailability = Future(
+Future(
   AssetAvailabilityWrapper(1, 
   List(Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)),
        Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))) )
+
+  }
 
   private def convertEvent(helloEvent: EventStreamElement[MicroserviceCalEvent]): api.AssetMessageChanged = {
     helloEvent.event match {

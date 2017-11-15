@@ -46,6 +46,16 @@ object MicroserviceCalEvent {
 }
 
 case class AssetMessageChanged(message: String) extends MicroserviceCalEvent
+
+case class AssetCreated() extends MicroserviceCalEvent
+case class AssetUpdated() extends MicroserviceCalEvent
+case class AssetDeleted() extends MicroserviceCalEvent
+/// EVENTS
+case class AssetEntryCreated() extends MicroserviceCalEvent
+case class AssetEntryUpdated() extends MicroserviceCalEvent
+case class AssetEntryDeleted() extends MicroserviceCalEvent
+
+
 object AssetMessageChanged {
   implicit val format: Format[AssetMessageChanged] = Json.format
 }

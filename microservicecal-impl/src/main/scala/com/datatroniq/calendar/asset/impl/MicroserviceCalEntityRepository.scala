@@ -1,8 +1,9 @@
 package com.datatroniq.calendar.asset.impl
 
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
-import com.lightbend.lagom.scaladsl.persistence.TestEntity.Evt
-import com.lightbend.lagom.scaladsl.persistence.{ AggregateEventTag, EventStreamElement, ReadSideProcessor, TestEntity }
+import com.lightbend.lagom.scaladsl.persistence._
+import com.lightbend.lagom.scaladsl.persistence.{ AggregateEventTag, EventStreamElement, ReadSideProcessor }
+import com.datatroniq.calendar.asset.impl._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import slick.jdbc.JdbcBackend.Database
@@ -66,24 +67,21 @@ trait Tables {
     } yield updated
   }
   def entryRemove(id: String): DBIO[_] = entries.filter(_.id === id).remove
-
-
-
 }
 
 object MicroserviceCalEntityRepository {
 
   class MicroserviceCalEntityProcessor(readSide: SlickReadSide, db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
-    extends ReadSideProcessor[MicroserviceCalEntity.Evt]
+    extends ReadSideProcessor[MicroserviceCalEvent]
     with Tables {
 
-    def buildHandler(): ReadSideHandler[MicroserviceCalEntity.Evt] = readSide
-      .builder[MicroserviceCalEntity.Evt]("test-entity-read-side")
+    def buildHandler(): ReadSideHandler[MicroserviceCalEvent] = readSide
+      .builder[MicroserviceCalEvent]("test-entity-read-side")
       .setGlobalPrepare(createTable)
       .setEventHandler(updateCount)
       .build()
 
-    def aggregateTags: Set[AggregateEventTag[Evt]] = MicroserviceCalEntity.Evt.aggregateEventShards.allTags
+    def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] = MicroserviceCalEvent.aggregateEventShards.allTags
 
     def updateCount(event: EventStreamElement[MicroserviceCalEntity.Appended]) = countUpdate(event.entityId, 1)
   }

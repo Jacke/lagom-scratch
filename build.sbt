@@ -9,6 +9,10 @@ val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 val joda = "joda-time" % "joda-time" % "2.9.9"
 val persist = "com.lightbend.lagom" % "lagom-scaladsl-persistence-jdbc_2.11" % "1.3.10"
 val postgres = "org.postgresql" % "postgresql" % "9.4.1212"
+val slick = "com.typesafe.slick" %% "slick" % "3.2.0"
+val nop =  "org.slf4j" % "slf4j-nop" % "1.6.4"
+val hikari = "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0"
+
 
 lazy val `microservicecal` = (project in file("."))
   .aggregate(`microservicecal-api`, `microservicecal-impl`)
@@ -30,7 +34,11 @@ lazy val `microservicecal-impl` = (project in file("microservicecal-impl"))
       joda,
       postgres,
       macwire,
-      scalaTest
+      scalaTest,
+      slick,
+      nop,
+      hikari
+
     )
   )
   .settings(lagomForkedTestSettings: _*)
