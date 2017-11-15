@@ -17,12 +17,12 @@ trait AssetService extends Service {
 // 1.1 The employee manages the calendar for his book store
   def getAllAssets(): ServiceCall[NotUsed, List[Asset]]
   def getAsset(assetId: Int): ServiceCall[NotUsed, Asset]
-  def getEntries(assetId: Int): ServiceCall[NotUsed, List[Entry]]
-
   def createAsset(): ServiceCall[NotUsed, Asset]
   def updateAsset(id: Int): ServiceCall[NotUsed, Asset]
   def deleteAsset(id: Int): ServiceCall[NotUsed, Int]
 
+
+  def getAssetEntries(assetId: Int): ServiceCall[NotUsed, List[Entry]]
   def createAssetEntry(id: Int): ServiceCall[NotUsed, String]
   def updateAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, String]
   def deleteAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, String]
@@ -41,16 +41,13 @@ trait AssetService extends Service {
       .withCalls(
         restCall(Method.GET, "/api/asset/:id", getAsset _),
         restCall(Method.GET, "/api/assets",    getAllAssets _),
-        restCall(Method.GET, "/api/asset/:id/entries",    getEntries _),
-        //1.1 The employee manages the calendar for his book store
+        restCall(Method.GET, "/api/asset/:id/entries",    getAssetEntries _),
         restCall(Method.POST, "/api/asset", createAsset _),
         restCall(Method.PUT, "/api/asset/:id", updateAsset _),
         restCall(Method.DELETE, "/api/asset/:id", deleteAsset _),
-/////////////////////////////
         restCall(Method.POST, "/api/asset/:id/entry", createAssetEntry _),
         restCall(Method.PUT, "/api/asset/:assetId/entry/:id", updateAssetEntry _),
         restCall(Method.DELETE, "/api/asset/:assetId/entry/:id", deleteAssetEntry _),
-        //1.2 The company wants to know when the store was open
         restCall(Method.GET, "/api/asset/:id/availabilities", assetAvailability _)
       )
       .withTopics(

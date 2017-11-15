@@ -7,13 +7,15 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
 import org.joda.time.DateTime
-
+import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
+import slick.jdbc.JdbcBackend.Database
 // FOR TEST removeme
 import play.api.libs.json.{Format, Json}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegistry) extends AssetService {
+class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegistry, 
+  repository: MicroserviceCalEntityRepository, db: Database) extends AssetService {
 ///////
 //          Test commands
 ////
