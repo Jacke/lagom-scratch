@@ -12,7 +12,7 @@ import _root_.slick.driver.JdbcProfile
 import _root_.slick.driver.PostgresDriver.api._
 import _root_.slick.model._
 
-import com.github.tototoshi.slick.PostgresJodaSupport._
+//import com.github.tototoshi.slick.PostgresJodaSupport._
 import com.lightbend.lagom.scaladsl.persistence.slick._
 import org.joda.time.DateTime
 
@@ -51,8 +51,8 @@ trait Tables {
     def id = column[Int]("id", O.PrimaryKey)
     def asset_id = column[Int]("asset_id")
     def name = column[String]("name")
-    def from = column[org.joda.time.DateTime]("from")
-    def end = column[org.joda.time.DateTime]("end")
+    def from = column[Int]("from")
+    def end = column[Int]("end")
 
     def asset = foreignKey("ASSET_FK", asset_id, assets)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
     def * = (id, asset_id, name, from, end) <> (Entry.tupled, Entry.unapply)
@@ -95,7 +95,9 @@ object MicroserviceCalEntityRepository {
       //.setEventHandler(updateCount)
       .build()
 
-    def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] = MicroserviceCalEvent.aggregateEventShards.allTags
+    def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] = Set(
+    	MicroserviceCalEvent.Tag
+    )
 
     //def updateCount(event: EventStreamElement[MicroserviceCalEntity.Appended]) = countUpdate(event.entityId)
   }

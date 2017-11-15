@@ -8,7 +8,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 //addSbtPlugin("com.jamesward" % "play-auto-refresh" % "0.0.16")
 
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.3.10")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.4.0-M2")
 
 
 // Needed for importing the project into Eclipse

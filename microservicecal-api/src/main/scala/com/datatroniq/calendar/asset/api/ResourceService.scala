@@ -11,9 +11,9 @@ object AssetService  {
   val TOPIC_NAME = "Assets"
 }
 case class Asset(id:Int, name: String)
-case class Availability(from: DateTime, end: DateTime)
+case class Availability(from: Int, end: Int)
 case class AssetAvailabilityWrapper(assetId: Int, availability: List[Availability])
-case class Entry(id:Int, asset_id: Int, name: String, from: DateTime, end: DateTime)
+case class Entry(id:Int, asset_id: Int, name: String, from: Int, end: Int)
 
 trait AssetService extends Service {
 

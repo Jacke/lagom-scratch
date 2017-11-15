@@ -42,8 +42,7 @@ lazy val `microservicecal-impl` = (project in file("microservicecal-impl"))
    //   slick,
       nop,
    //   hikari,
-      slickjoda,
-
+  //    slickjoda,
       jodaconvert
 
     )

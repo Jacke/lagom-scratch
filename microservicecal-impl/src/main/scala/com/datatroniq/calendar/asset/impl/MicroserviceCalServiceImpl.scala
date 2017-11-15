@@ -69,7 +69,7 @@ class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegis
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // List[Entry]]
    Future( 
-    List(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))
+    List(Entry(1, 2, "test entry", 1, 1))
   )
   }
 
@@ -102,8 +102,8 @@ class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegis
     //ref.ask(Hello(test)) // AssetAvailabilityWrapper
 Future(
   AssetAvailabilityWrapper(1, 
-  List(Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)),
-       Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))) )
+  List(Availability(4, 2 ),
+       Availability(4, 2 ))) )
 
   }
 
