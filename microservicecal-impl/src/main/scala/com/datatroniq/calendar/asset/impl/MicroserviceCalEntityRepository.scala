@@ -4,11 +4,14 @@ import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandle
 import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.persistence.{ AggregateEventTag, EventStreamElement, ReadSideProcessor }
 import com.datatroniq.calendar.asset.impl._
+import com.datatroniq.calendar.asset.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.JdbcProfile
 import org.joda.time.DateTime
+import slick.driver.PostgresDriver.api._
+import com.github.tototoshi.slick.PostgresJodaSupport._
 
 trait Tables {
 

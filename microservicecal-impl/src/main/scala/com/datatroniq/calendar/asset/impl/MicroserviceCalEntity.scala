@@ -7,7 +7,6 @@ import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegi
 import play.api.libs.json.{Format, Json}
 import scala.collection.immutable.Seq
 
-
 class MicroserviceCalEntity extends PersistentEntity {
   override type Command = MicroserviceCalCommand[_]
   override type Event = MicroserviceCalEvent

@@ -6,14 +6,23 @@ import com.lightbend.lagom.scaladsl.api.broker.kafka.{KafkaProperties, Partition
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.{Format, Json}
 import com.lightbend.lagom.scaladsl.api.transport.Method
-
+import org.joda.time.DateTime
 object AssetService  {
   val TOPIC_NAME = "Assets"
 }
+case class Asset(id:Int, name: String)
+case class Availability(from: DateTime, end: DateTime)
+case class AssetAvailabilityWrapper(assetId: Int, availability: List[Availability])
+case class Entry(id:Int, asset_id: Int, from: DateTime, end: DateTime)
 
 trait AssetService extends Service {
-  def hello(id: String): ServiceCall[NotUsed, String]
 
+implicit val format: Format[Asset] = Json.format[Asset]
+implicit val format2: Format[Availability] = Json.format[Availability]
+implicit val format3: Format[AssetAvailabilityWrapper] = Json.format[AssetAvailabilityWrapper]
+implicit val format4: Format[Entry] = Json.format[Entry]
+
+  def hello(id: String): ServiceCall[NotUsed, String]
 // 1.1 The employee manages the calendar for his book store
   def getAllAssets(): ServiceCall[NotUsed, List[Asset]]
   def getAsset(assetId: Int): ServiceCall[NotUsed, Asset]

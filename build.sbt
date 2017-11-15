@@ -13,6 +13,8 @@ val slick = "com.typesafe.slick" %% "slick" % "3.2.0"
 val nop =  "org.slf4j" % "slf4j-nop" % "1.6.4"
 val hikari = "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0"
 
+val slickjoda =  "com.github.tototoshi" %% "slick-joda-mapper" % "2.3.0"
+val jodaconvert =  "org.joda" % "joda-convert" % "1.7"
 
 lazy val `microservicecal` = (project in file("."))
   .aggregate(`microservicecal-api`, `microservicecal-impl`)
@@ -37,7 +39,9 @@ lazy val `microservicecal-impl` = (project in file("microservicecal-impl"))
       scalaTest,
       slick,
       nop,
-      hikari
+      hikari,
+      slickjoda,
+      jodaconvert
 
     )
   )
