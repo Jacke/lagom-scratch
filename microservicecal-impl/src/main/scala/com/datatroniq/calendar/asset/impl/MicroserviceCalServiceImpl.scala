@@ -14,13 +14,16 @@ import play.api.libs.json.{Format, Json}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegistry
-  //repository: MicroserviceCalEntityRepository, 
+class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegistry,
+  readSide: com.lightbend.lagom.scaladsl.persistence.ReadSide
+  //entityProcessor: MicroserviceCalEntityProcessor
   //db: Database
 ) extends AssetService {
 ///////
 //          Test commands
 ////
+  //readSide.register[MicroserviceCalEvent](MicroserviceCalEntityProcessor)
+
   override def hello(id: String) = ServiceCall { _ =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](id)
     ref.ask(Hello(id))

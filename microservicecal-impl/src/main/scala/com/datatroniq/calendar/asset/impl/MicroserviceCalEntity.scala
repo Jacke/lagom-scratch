@@ -39,10 +39,6 @@ object MicroserviceCalState {implicit val format: Format[MicroserviceCalState] =
 
 case class AssetMessageChanged(message: String) extends MicroserviceCalEvent
 object AssetMessageChanged {implicit val format: Format[AssetMessageChanged] = Json.format}
-
-
-
-
 // Commands
 case class UseAssetMessage(message: String) extends MicroserviceCalCommand[Done]
 object UseAssetMessage {implicit val format: Format[UseAssetMessage] = Json.format}
@@ -56,14 +52,12 @@ object MicroserviceCalSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[Hello],
     JsonSerializer[AssetMessageChanged],
     JsonSerializer[MicroserviceCalState],
-
     JsonSerializer[AssetCreated],
     JsonSerializer[AssetUpdated],
     JsonSerializer[AssetDeleted],
     JsonSerializer[AssetEntryCreated],
     JsonSerializer[AssetEntryUpdated],
     JsonSerializer[AssetEntryDeleted],
-
     JsonSerializer[AssetCreate],
     JsonSerializer[AssetUpdate],
     JsonSerializer[AssetDelete],

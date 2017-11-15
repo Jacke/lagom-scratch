@@ -1,0 +1,67 @@
+package com.datatroniq.calendar.asset.impl
+
+import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor.ReadSideHandler
+import com.lightbend.lagom.scaladsl.persistence._
+import com.lightbend.lagom.scaladsl.persistence.{ AggregateEventTag, EventStreamElement, ReadSideProcessor }
+import com.datatroniq.calendar.asset.impl._
+import com.datatroniq.calendar.asset.api._
+
+import scala.concurrent.{ ExecutionContext, Future }
+import _root_.slick.jdbc.JdbcBackend.Database
+import _root_.slick.driver.JdbcProfile
+import _root_.slick.driver.PostgresDriver.api._
+import _root_.slick.model._
+
+//import com.github.tototoshi.slick.PostgresJodaSupport._
+import com.lightbend.lagom.scaladsl.persistence.slick._
+import org.joda.time.DateTime
+
+trait Tables {
+
+  val profile: JdbcProfile
+  import profile.api._
+  implicit val ec: ExecutionContext
+
+	//case class Asset(id:Int, name: String)
+  
+
+}
+
+object MicroserviceCalEntityRepository {
+
+  class MicroserviceCalEntityProcessor(readSide: SlickReadSide, db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
+    extends ReadSideProcessor[MicroserviceCalEvent]
+    with Tables {
+    def buildHandler(): ReadSideHandler[MicroserviceCalEvent] = readSide
+      .builder[MicroserviceCalEvent]("test-entity-read-side")
+      .setGlobalPrepare(createTableEntries)
+      .setGlobalPrepare(createTableAssets)
+	.setEventHandler(assetCreatedOp)
+	.setEventHandler(assetUpdatedOp)
+	.setEventHandler(assetDeletedOp)
+	.setEventHandler(assetEntryCreatedOp)
+	.setEventHandler(assetEntryUpdatedOp)
+	.setEventHandler(assetEntryDeletedOp)
+      .build()
+
+    def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] = Set(MicroserviceCalEvent.Tag)
+
+	def assetCreatedOp(event: EventStreamElement[AssetCreated]) = testStub(event)
+	def assetUpdatedOp(event: EventStreamElement[AssetUpdated]) = testStub(event)
+	def assetDeletedOp(event: EventStreamElement[AssetDeleted]) = testStub(event)
+	def assetEntryCreatedOp(event: EventStreamElement[AssetEntryCreated]) = testStub(event)
+	def assetEntryUpdatedOp(event: EventStreamElement[AssetEntryUpdated]) = testStub(event)
+	def assetEntryDeletedOp(event: EventStreamElement[AssetEntryDeleted]) = testStub(event)
+  }
+}
+
+class MicroserviceCalEntityRepository(db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
+  extends Tables {
+  import profile.api._
+  def getAppendCount(id: Int): Future[Option[Int]] = db.run {
+    assets.filter(_.id === id)
+      .map(_.id)
+      .result
+      .headOption
+    }
+}

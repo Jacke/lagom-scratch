@@ -10,20 +10,14 @@ import scala.concurrent.{ ExecutionContext, Future }
 import _root_.slick.jdbc.JdbcBackend.Database
 import _root_.slick.driver.JdbcProfile
 import _root_.slick.driver.PostgresDriver.api._
-import _root_.slick.model._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 //import com.github.tototoshi.slick.PostgresJodaSupport._
 import com.lightbend.lagom.scaladsl.persistence.slick._
 import org.joda.time.DateTime
 
-trait Tables {
-
-  val profile: JdbcProfile
-  import profile.api._
-  implicit val ec: ExecutionContext
-
-	//case class Asset(id:Int, name: String)
-  class Assets(tag: Tag) extends Table[Asset](tag, "assets") {
+class MicroserviceCalEntityRepository {
+class Assets(tag: Tag) extends Table[Asset](tag, "assets") {
     def id = column[Int]("id", O.PrimaryKey)
     def name = column[String]("name")
     def * = (id, name) <> (Asset.tupled, Asset.unapply)
@@ -43,6 +37,8 @@ trait Tables {
       }
     } yield updated
   }
+  def selectAssets = assets.result
+  def selectAsset(id: Int) = assets.filter(_.id === id).result
   def assetRemove(id: Int): DBIO[_] = assets.filter(_.id === id).delete
 
 
@@ -62,7 +58,10 @@ trait Tables {
   def entryCreate(e: Entry): DBIO[_] = entries += Entry(e.id, e.asset_id, e.name, e.from, e.end)
   def getEntry(id: Int) = entries.filter(_.id === id)
   def getEntriesByAsset(asset_id: Int) = entries.filter(_.asset_id === asset_id)
-
+  def selectEntries = entries.result
+  def selectEntry(id: Int) = entries.filter(_.id === id).result
+  def selectEntryByAsset(asset_id: Int) = entries.filter(_.asset_id === asset_id).result
+  def entryRemove(id: Int): DBIO[_] = entries.filter(_.id === id).delete
   def entryUpdate(id: Int, entryToUpdate: Entry): DBIO[_] = {
     val q: Query[Entries, Entry, Seq] = entries.filter(_.id === id)
     for {
@@ -79,37 +78,6 @@ trait Tables {
       }
     } yield updated
   }
-  def entryRemove(id: Int): DBIO[_] = entries.filter(_.id === id).delete
-}
+  def testStub[T](e: EventStreamElement[T]): DBIO[_] = entries.filter(_.id === 1).delete
 
-object MicroserviceCalEntityRepository {
-
-  class MicroserviceCalEntityProcessor(readSide: SlickReadSide, db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
-    extends ReadSideProcessor[MicroserviceCalEvent]
-    with Tables {
-
-    def buildHandler(): ReadSideHandler[MicroserviceCalEvent] = readSide
-      .builder[MicroserviceCalEvent]("test-entity-read-side")
-      .setGlobalPrepare(createTableEntries)
-      .setGlobalPrepare(createTableAssets)
-      //.setEventHandler(updateCount)
-      .build()
-
-    def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] = Set(
-    	MicroserviceCalEvent.Tag
-    )
-
-    //def updateCount(event: EventStreamElement[MicroserviceCalEntity.Appended]) = countUpdate(event.entityId)
-  }
-}
-
-class MicroserviceCalEntityRepository(db: Database, val profile: JdbcProfile)(implicit val ec: ExecutionContext)
-  extends Tables {
-  import profile.api._
-  def getAppendCount(id: Int): Future[Option[Int]] = db.run {
-    assets.filter(_.id === id)
-      .map(_.id)
-      .result
-      .headOption
-    }
 }
