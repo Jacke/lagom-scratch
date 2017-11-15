@@ -13,7 +13,7 @@ object AssetService  {
 case class Asset(id:Int, name: String)
 case class Availability(from: DateTime, end: DateTime)
 case class AssetAvailabilityWrapper(assetId: Int, availability: List[Availability])
-case class Entry(id:Int, asset_id: Int, from: DateTime, end: DateTime)
+case class Entry(id:Int, asset_id: Int, name: String, from: DateTime, end: DateTime)
 
 trait AssetService extends Service {
 
@@ -30,8 +30,7 @@ implicit val format4: Format[Entry] = Json.format[Entry]
   def updateAsset(id: Int): ServiceCall[NotUsed, Asset]
   def deleteAsset(id: Int): ServiceCall[NotUsed, Int]
 
-
-  def getAssetEntries(assetId: Int): ServiceCall[NotUsed, List[Entry]]
+  def getEntries(assetId: Int): ServiceCall[NotUsed, List[Entry]]
   def createAssetEntry(id: Int): ServiceCall[NotUsed, String]
   def updateAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, String]
   def deleteAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, String]
@@ -50,7 +49,7 @@ implicit val format4: Format[Entry] = Json.format[Entry]
       .withCalls(
         restCall(Method.GET, "/api/asset/:id", getAsset _),
         restCall(Method.GET, "/api/assets",    getAllAssets _),
-        restCall(Method.GET, "/api/asset/:id/entries",    getAssetEntries _),
+        restCall(Method.GET, "/api/asset/:id/entries",    getEntries _),
         restCall(Method.POST, "/api/asset", createAsset _),
         restCall(Method.PUT, "/api/asset/:id", updateAsset _),
         restCall(Method.DELETE, "/api/asset/:id", deleteAsset _),

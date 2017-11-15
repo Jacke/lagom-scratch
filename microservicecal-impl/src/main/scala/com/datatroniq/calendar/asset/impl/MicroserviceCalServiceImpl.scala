@@ -14,8 +14,10 @@ import play.api.libs.json.{Format, Json}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegistry, 
-  repository: MicroserviceCalEntityRepository, db: Database) extends AssetService {
+class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegistry
+  //repository: MicroserviceCalEntityRepository, 
+  //db: Database
+) extends AssetService {
 ///////
 //          Test commands
 ////
@@ -66,7 +68,9 @@ class MicroserviceCalServiceImpl(persistentEntityRegistry: PersistentEntityRegis
     val test:String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // List[Entry]]
-   List(Entry(1, 2, org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))
+   Future( 
+    List(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now().plusMinutes(10)))
+  )
   }
 
   override def createAsset() = ServiceCall { request =>
