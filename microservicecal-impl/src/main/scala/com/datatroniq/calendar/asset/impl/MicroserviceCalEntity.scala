@@ -46,10 +46,10 @@ object MicroserviceCalEvent {
 
 case class AssetMessageChanged(message: String) extends MicroserviceCalEvent
 
+/// EVENTS
 case class AssetCreated() extends MicroserviceCalEvent
 case class AssetUpdated() extends MicroserviceCalEvent
 case class AssetDeleted() extends MicroserviceCalEvent
-/// EVENTS
 case class AssetEntryCreated() extends MicroserviceCalEvent
 case class AssetEntryUpdated() extends MicroserviceCalEvent
 case class AssetEntryDeleted() extends MicroserviceCalEvent
@@ -68,6 +68,22 @@ case class Hello(name: String) extends MicroserviceCalCommand[String]
 object Hello {
   implicit val format: Format[Hello] = Json.format
 }
+
+
+case class AssetCreate(name: String) extends MicroserviceCalCommand[String]
+object AssetCreate {implicit val format: Format[AssetCreate] = Json.format}
+case class AssetUpdate(name: String) extends MicroserviceCalCommand[String]
+object AssetUpdate {implicit val format: Format[AssetUpdate] = Json.format}
+case class AssetDelete(name: String) extends MicroserviceCalCommand[String]
+object AssetDelete {implicit val format: Format[AssetDelete] = Json.format}
+case class AssetEntryCreate(name: String) extends MicroserviceCalCommand[String]
+object AssetEntryCreate {implicit val format: Format[AssetEntryCreate] = Json.format}
+case class AssetEntryUpdate(name: String) extends MicroserviceCalCommand[String]
+object AssetEntryUpdate {implicit val format: Format[AssetEntryUpdate] = Json.format}
+case class AssetEntryDelete(name: String) extends MicroserviceCalCommand[String]
+object AssetEntryDelete {implicit val format: Format[AssetEntryDelete] = Json.format}
+
+
 object MicroserviceCalSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[UseAssetMessage],
