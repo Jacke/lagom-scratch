@@ -15,12 +15,12 @@ case class Availability(from: Int, end: Int)
 case class AssetAvailabilityWrapper(assetId: Int, availability: List[Availability])
 case class Entry(id:Int, asset_id: Int, name: String, from: Int, end: Int)
 
-trait AssetService extends Service {
 
-implicit val format: Format[Asset] = Json.format[Asset]
-implicit val format2: Format[Availability] = Json.format[Availability]
-implicit val format3: Format[AssetAvailabilityWrapper] = Json.format[AssetAvailabilityWrapper]
-implicit val format4: Format[Entry] = Json.format[Entry]
+trait AssetService extends Service {
+  implicit val format: Format[Asset] = Json.format[Asset]
+  implicit val format2: Format[Availability] = Json.format[Availability]
+  implicit val format3: Format[AssetAvailabilityWrapper] = Json.format[AssetAvailabilityWrapper]
+  implicit val format4: Format[Entry] = Json.format[Entry]
 
   def hello(id: String): ServiceCall[NotUsed, String]
 // 1.1 The employee manages the calendar for his book store
@@ -31,9 +31,9 @@ implicit val format4: Format[Entry] = Json.format[Entry]
   def deleteAsset(id: Int): ServiceCall[NotUsed, Int]
 
   def getEntries(assetId: Int): ServiceCall[NotUsed, List[Entry]]
-  def createAssetEntry(id: Int): ServiceCall[NotUsed, String]
-  def updateAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, String]
-  def deleteAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, String]
+  def createAssetEntry(id: Int): ServiceCall[NotUsed, Entry]
+  def updateAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, Entry]
+  def deleteAssetEntry(assetId:Int, id: Int): ServiceCall[NotUsed, Int]
 
 
 // 1.2 The company wants to know when the store was open
