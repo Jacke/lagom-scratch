@@ -14,6 +14,8 @@ import com.lightbend.lagom.scaladsl.playjson.{
 import play.api.libs.json.{Format, Json}
 import scala.collection.immutable.Seq
 import com.datatroniq.calendar.asset.api._
+import play.api.libs.json.JodaReads._
+import play.api.libs.json.JodaWrites._
 
 class MicroserviceCalEntity extends PersistentEntity {
   override type Command = MicroserviceCalCommand[_]
@@ -21,9 +23,9 @@ class MicroserviceCalEntity extends PersistentEntity {
   override type State = MicroserviceCalState
 
   override def initialState: MicroserviceCalState =
-    MicroserviceCalState("Event", LocalDateTime.now.toString)
+    MicroserviceCalState("Event", List(), List(), LocalDateTime.now.toString)
   override def behavior: Behavior = {
-    case MicroserviceCalState(message, _) =>
+    case MicroserviceCalState(message, assets, entries, _) =>
       Actions()
         .onCommand[UseAssetMessage, Done] {
           case (UseAssetMessage(newMessage), ctx, state) =>
@@ -36,7 +38,7 @@ class MicroserviceCalEntity extends PersistentEntity {
         .onCommand[AssetCreate, Done] {
           case (AssetCreate(asset), ctx, state) =>
             ctx.thenPersist(
-              AssetCreate(asset)
+              AssetCreated(asset)
             ) { _ =>
               ctx.reply(Done)
             }
@@ -44,7 +46,7 @@ class MicroserviceCalEntity extends PersistentEntity {
         .onCommand[AssetUpdate, Done] {
           case (AssetUpdate(asset), ctx, state) =>
             ctx.thenPersist(
-              AssetUpdate(asset)
+              AssetUpdated(asset)
             ) { _ =>
               ctx.reply(Done)
             }
@@ -52,7 +54,7 @@ class MicroserviceCalEntity extends PersistentEntity {
         .onCommand[AssetDelete, Done] {
           case (AssetDelete(asset), ctx, state) =>
             ctx.thenPersist(
-              AssetDelete(asset)
+              AssetDeleted(asset.id)
             ) { _ =>
               ctx.reply(Done)
             }
@@ -60,7 +62,7 @@ class MicroserviceCalEntity extends PersistentEntity {
         .onCommand[AssetEntryCreate, Done] {
           case (AssetEntryCreate(entry), ctx, state) =>
             ctx.thenPersist(
-              AssetEntryCreate(entry)
+              AssetEntryCreated(entry)
             ) { _ =>
               ctx.reply(Done)
             }
@@ -68,7 +70,7 @@ class MicroserviceCalEntity extends PersistentEntity {
         .onCommand[AssetEntryUpdate, Done] {
           case (AssetEntryUpdate(entry), ctx, state) =>
             ctx.thenPersist(
-              AssetEntryUpdate(entry)
+              AssetEntryUpdated(entry)
             ) { _ =>
               ctx.reply(Done)
             }
@@ -76,7 +78,7 @@ class MicroserviceCalEntity extends PersistentEntity {
         .onCommand[AssetEntryDelete, Done] {
           case (AssetEntryDelete(entry), ctx, state) =>
             ctx.thenPersist(
-              AssetEntryDelete(entry)
+              AssetEntryDeleted(entry.id)
             ) { _ =>
               ctx.reply(Done)
             }
@@ -89,38 +91,43 @@ class MicroserviceCalEntity extends PersistentEntity {
                             "state" -> Json.toJson(state)))
                 .toString)
         }
-        .onReadOnlyCommand[Hello, String] {
+
+        .onReadOnlyCommand[AssetEntries, String] {
           case (AssetEntries(assetId), ctx, state) =>
                         ctx.reply(
-                          Json.toJson(Map("state" -> Json.toJson(state))))
+                          Json.toJson(Map("state" -> Json.toJson(state))).toString)
         }
-        .onReadOnlyCommand[Hello, String] {
+        .onReadOnlyCommand[AssetsList, String] {
           case (AssetsList(), ctx, state) =>
                         ctx.reply(
-                          Json.toJson(Map("state" -> Json.toJson(state))))
+                          Json.toJson(Map("state" -> Json.toJson(state))).toString)
         }
 
         .onEvent {
           case (AssetMessageChanged(newMessage), state) =>
-            MicroserviceCalState(newMessage, LocalDateTime.now().toString)
-          case (AssetCreated(asset), state) => 
-             MicroserviceCalState(asset, LocalDateTime.now().toString)
-          case (AssetUpdated(asset), state) => 
-             MicroserviceCalState(asset, LocalDateTime.now().toString)
-          case (AssetDeleted(asset), state) => 
-             MicroserviceCalState(asset, LocalDateTime.now().toString)
-          case (AssetEntryCreated(entry), state) => 
-             MicroserviceCalState(entry, LocalDateTime.now().toString)
-          case (AssetEntryUpdated(entry), state) => 
-             MicroserviceCalState(entry, LocalDateTime.now().toString)
-          case (AssetEntryDeleted(entry), state) => 
-             MicroserviceCalState(entry, LocalDateTime.now().toString)
+            MicroserviceCalState(newMessage, state.assets, state.entries, LocalDateTime.now().toString)
+          // Assets
+          case (AssetCreated(newAsset), state) => 
+             MicroserviceCalState(state.message, (newAsset :: state.assets), state.entries, LocalDateTime.now().toString)
+          case (AssetUpdated(assetUpdated), state) => 
+             MicroserviceCalState(state.message, (assetUpdated :: state.assets.filter(a => a.id != assetUpdated.id)), state.entries, LocalDateTime.now().toString)
+          case (AssetDeleted(assetRemovedId), state) => 
+             state.copy(state.message, state.assets.filter(a => a.id != assetRemovedId), state.entries, LocalDateTime.now().toString)
+          // Entries
+          case (AssetEntryCreated(newEntry), state) => 
+             MicroserviceCalState(state.message, state.assets, (newEntry :: state.entries), LocalDateTime.now().toString)
+          case (AssetEntryUpdated(entryUpdated), state) => 
+             MicroserviceCalState(state.message, state.assets, (entryUpdated :: state.entries.filter(a => a.id != entryUpdated.id)), LocalDateTime.now().toString)
+          case (AssetEntryDeleted(entryRemovedId), state) => 
+             MicroserviceCalState(state.message, state.assets, state.entries.filter(a => a.id != entryRemovedId), LocalDateTime.now().toString)
         }
   }
 }
 
-case class MicroserviceCalState(message: String, timestamp: String)
+case class MicroserviceCalState(message: String, assets:List[Asset], entries: List[Entry], timestamp: String)
 object MicroserviceCalState {
+  implicit val format0: Format[Asset] = Json.format[Asset]
+  implicit val format4: Format[Entry] = Json.format[Entry]
   implicit val format: Format[MicroserviceCalState] = Json.format
 }
 
@@ -156,8 +163,7 @@ object MicroserviceCalSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[AssetEntryCreate],
     JsonSerializer[AssetEntryUpdate],
     JsonSerializer[AssetEntryDelete],
-    JsonSerializer[AssetEntries],
-    JsonSerializer[AssetsList]
+    JsonSerializer[AssetEntries]
 
   )
 }
