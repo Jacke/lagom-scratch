@@ -9,6 +9,7 @@ import com.lightbend.lagom.scaladsl.persistence.{
   EventStreamElement,
   PersistentEntityRegistry
 }
+
 import org.joda.time.DateTime
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 // FOR TEST removeme
@@ -79,11 +80,8 @@ class MicroserviceCalServiceImpl(
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     ref.ask(AssetGet(assetId)).map { r =>
-      r match {
-        case Some(asset) => Json.toJson(asset).toString
-        case _ => "Not found"
-      }
-    } 
+      Json.toJson(r).toString
+    }
     //db.run( repository.selectAsset(assetId) )
   }
 
@@ -100,7 +98,11 @@ class MicroserviceCalServiceImpl(
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //    db.run( repository.assetCreate(Asset(2, "bookstore")) )
-    ref.ask(AssetCreate(request))
+      db.run(repository.assetCreate(request)).flatMap { db_result =>
+        ref.ask(AssetCreate(db_result)).map { r =>
+          r
+      }
+    }
   }
 
   override def updateAsset(id: Int) = ServiceCall { request =>
@@ -123,7 +125,11 @@ class MicroserviceCalServiceImpl(
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //db.run(
     //  repository.entryCreate(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now())))
-    ref.ask(AssetEntryCreate(request))
+    db.run(repository.entryCreate(request)).flatMap { db_result =>
+        ref.ask(AssetEntryCreate(db_result)).map { r =>
+          r
+      }
+    }
   }
   override def updateAssetEntry(assetId: Int, id: Int) = ServiceCall {
     request =>
@@ -157,6 +163,12 @@ class MicroserviceCalServiceImpl(
     helloEvent.event match {
       case AssetMessageChanged(msg) =>
         api.AssetMessageChanged(helloEvent.entityId, msg)
+    }
+  }
+
+  private def persistToDb(action: DBIO[_]) = {
+    if (true) {
+      db.run(action)
     }
   }
 }

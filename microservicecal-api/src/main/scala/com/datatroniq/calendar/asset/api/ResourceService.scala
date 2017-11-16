@@ -13,11 +13,11 @@ import org.joda.time.DateTime
 object AssetService {
   val TOPIC_NAME = "Assets"
 }
-case class Asset(id: Int, name: String)
+case class Asset(id: Option[Int] = None, name: String)
 case class Availability(from: DateTime, end: DateTime)
 case class AssetAvailabilityWrapper(assetId: Int,
                                     availability: List[Availability])
-case class Entry(id: Int, asset_id: Int, name: String, from: DateTime, end: DateTime)
+case class Entry(id: Option[Int] = None, asset_id: Int, name: String, from: DateTime, end: DateTime)
 
 trait AssetService extends Service {
   import com.datatroniq.calendar.utils.Formats._
@@ -58,13 +58,13 @@ trait AssetService extends Service {
         restCall(Method.DELETE, "/api/asset/:assetId/entry/:id", deleteAssetEntry _),
         restCall(Method.GET, "/api/asset/:id/availabilities", assetAvailability _)
       )
-      .withTopics(
-        topic(AssetService.TOPIC_NAME, greetingsTopic _)
-          .addProperty(
-            KafkaProperties.partitionKeyStrategy,
-            PartitionKeyStrategy[AssetMessageChanged](_.name)
-          )
-      )
+      //.withTopics(
+      //  topic(AssetService.TOPIC_NAME, greetingsTopic _)
+      //    .addProperty(
+      //      KafkaProperties.partitionKeyStrategy,
+      //      PartitionKeyStrategy[AssetMessageChanged](_.name)
+      //    )
+      //)
       .withAutoAcl(true)
     // @formatter:on
   }

@@ -41,7 +41,7 @@ object AssetDeleted { implicit val format: Format[AssetDeleted] = Json.format }
  * Commands
  */
 case class AssetsList() extends MicroserviceCalCommand[List[Asset]]
-case class AssetGet(id: Int) extends MicroserviceCalCommand[Option[Asset]]
+case class AssetGet(id: Int) extends MicroserviceCalCommand[Asset]
 object AssetGet {
     implicit val format: Format[AssetGet] = Json.format
 }

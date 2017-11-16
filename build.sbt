@@ -4,6 +4,8 @@ version in ThisBuild := "1.0-SNAPSHOT"
 // the Scala version that will be used for cross-compiled libraries
 scalaVersion in ThisBuild := "2.11.8"
 
+lagomKafkaEnabled in ThisBuild := false
+
 def latestScalafmt = "1.3.0"
 commands += Command.args("scalafmt", "Run scalafmt cli.") {
   case (state, args) =>

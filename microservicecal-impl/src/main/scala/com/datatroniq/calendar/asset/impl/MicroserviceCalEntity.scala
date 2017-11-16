@@ -16,6 +16,7 @@ import scala.collection.immutable.Seq
 import com.datatroniq.calendar.asset.api._
 import play.api.libs.json.JodaReads._
 import play.api.libs.json.JodaWrites._
+import com.datatroniq.calendar.utils.Formats._
 
 class MicroserviceCalEntity extends PersistentEntity {
   override type Command = MicroserviceCalCommand[_]
@@ -100,9 +101,13 @@ class MicroserviceCalEntity extends PersistentEntity {
           case (AssetsList(), ctx, state) =>
                         ctx.reply(state.assets)
         }
-        .onReadOnlyCommand[AssetGet, Option[Asset]] {
-          case (AssetGet(id), ctx, state) =>
-                ctx.reply(state.assets.find(a => a.id == id))
+        .onReadOnlyCommand[AssetGet, Asset] {
+          case (AssetGet(id), ctx, state) => {
+            state.assets.find(a => a.id == id) match {
+              case Some(asset) =>                 ctx.reply(asset)
+              case _ => ctx.invalidCommand("Not found")
+            }
+          }
         }
 
         .onEvent {
