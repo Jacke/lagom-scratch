@@ -19,6 +19,7 @@ import _root_.slick.model._
 import com.github.tototoshi.slick.PostgresJodaSupport._
 import com.lightbend.lagom.scaladsl.persistence.slick._
 import org.joda.time.DateTime
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait Tables {
 
@@ -98,6 +99,11 @@ trait Tables {
 }
 
 object MicroserviceCalEntityRepository {
+  def apply(db: Database, profile: JdbcProfile)(implicit ec: ExecutionContext) = new MicroserviceCalEntityRepository(db, profile)
+  def processor(readSide: SlickReadSide, db: Database, profile: JdbcProfile) = new MicroserviceCalEntityProcessor(
+      readSide,
+      db,
+      profile)
 
   class MicroserviceCalEntityProcessor(
       readSide: SlickReadSide,

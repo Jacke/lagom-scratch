@@ -16,8 +16,12 @@ import scala.collection.immutable.Seq
 import com.datatroniq.calendar.asset.api._
 import play.api.libs.json.JodaReads._
 import play.api.libs.json.JodaWrites._
+import com.datatroniq.calendar.utils.Formats._
 
-// Events
+
+/**
+ * Events
+ */
 case class AssetCreated(asset: Asset) extends MicroserviceCalEvent
 object AssetCreated {
   implicit val format0: Format[Asset] = Json.format[Asset]
@@ -33,7 +37,15 @@ object AssetUpdated {
 case class AssetDeleted(assetId: Int) extends MicroserviceCalEvent
 object AssetDeleted { implicit val format: Format[AssetDeleted] = Json.format }
 
-// Commands
+/**
+ * Commands
+ */
+case class AssetsList() extends MicroserviceCalCommand[String]
+object AssetsList {
+  implicit val format: Format[AssetsList] = Json.format
+}
+
+
 case class AssetCreate(asset: Asset) extends MicroserviceCalCommand[String]
 object AssetCreate {
   implicit val format0: Format[Asset] = Json.format[Asset]

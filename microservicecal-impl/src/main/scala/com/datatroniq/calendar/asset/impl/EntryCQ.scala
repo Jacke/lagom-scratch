@@ -18,7 +18,9 @@ import play.api.libs.json.JodaReads._
 import play.api.libs.json.JodaWrites._
 import com.datatroniq.calendar.utils.Formats._
 
-// Events
+/**
+ * Events
+ */
 case class AssetEntryCreated(entry: Entry) extends MicroserviceCalEvent
 object AssetEntryCreated {
   implicit val format4: Format[Entry] = Json.format[Entry]
@@ -36,7 +38,18 @@ object AssetEntryDeleted {
   implicit val format: Format[AssetEntryDeleted] = Json.format
 }
 
-// Commands
+
+/**
+ * Commands
+ */
+
+case class AssetEntries(entryId: Int) extends MicroserviceCalCommand[String]
+object AssetEntries {
+  implicit val format4: Format[Entry] = Json.format[Entry]
+  implicit val format: Format[AssetEntries] = Json.format
+}
+
+
 case class AssetEntryCreate(entry: Entry) extends MicroserviceCalCommand[String]
 object AssetEntryCreate {
   implicit val format4: Format[Entry] = Json.format[Entry]

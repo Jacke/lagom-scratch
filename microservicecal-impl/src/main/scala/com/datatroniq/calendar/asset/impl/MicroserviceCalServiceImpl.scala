@@ -30,33 +30,17 @@ import akka.persistence.query.Offset
 import com.lightbend.lagom.scaladsl.persistence.slick.SlickReadSide
 import _root_.slick.driver.JdbcProfile
 
-class MicroserviceCalProcessor(readSide: SlickReadSide)
-    extends ReadSideProcessor[MicroserviceCalEvent] {
-  override def buildHandler()
-    : ReadSideProcessor.ReadSideHandler[MicroserviceCalEvent] = {
-    val builder =
-      readSide.builder[MicroserviceCalEvent]("microservicecal_offset")
-    builder.build()
-  }
-  override def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] =
-    Set(MicroserviceCalEvent.Tag)
-
-}
-
 class MicroserviceCalServiceImpl(
     persistentEntityRegistry: PersistentEntityRegistry,
     readSide: ReadSide,
     slickReadSide: SlickReadSide,
     db: Database,
     val profile: JdbcProfile
-    //db: slick.jdbc.JdbcBackend.Database
 ) extends AssetService {
 
-  val repository = new MicroserviceCalEntityRepository(db, profile)
-  //val db = Database.forConfig("default")
-
+  val repository = MicroserviceCalEntityRepository(db, profile)
   readSide.register[MicroserviceCalEvent](
-    new MicroserviceCalEntityRepository.MicroserviceCalEntityProcessor(
+    MicroserviceCalEntityRepository.processor(
       slickReadSide,
       db,
       profile))
@@ -75,39 +59,27 @@ class MicroserviceCalServiceImpl(
         .eventStream(MicroserviceCalEvent.Tag, fromOffset)
         .map(ev => (convertEvent(ev), ev.offset))
     }
+
+
+
+
 ///////
 //          Primary commands
 ////
+// Query the Read-Side Database
+
   override def getAllAssets() = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // List[Asset]]
-    Future(List(Asset(1, "cab"), Asset(2, "bookstore")))
+    db.run(repository.selectAssets() )
   }
   override def getAsset(assetId: Int) = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // Asset]
-    Future(Asset(2, "bookstore"))
-  }
-  override def createAsset() = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    //ref.ask(Hello(test))
-    Future(Asset(2, "bookstore"))
-  }
+    db.run( repository.selectAsset(assetId) )
 
-  override def updateAsset(id: Int) = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    //ref.ask(Hello(test)) // Asset]
-    Future(Asset(2, "bookstore"))
-  }
-  override def deleteAsset(id: Int) = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    //ref.ask(Hello(test)) // Asset]
-    Future(1)
   }
 
   override def getEntries(assetId: Int) = ServiceCall { request =>
@@ -115,24 +87,52 @@ class MicroserviceCalServiceImpl(
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // List[Entry]]
     Future(List(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now())))
+    db.run (repository.selectEntryByAsset(assetId) )
   }
+
+
+//  Update the Read-Side
+  override def createAsset() = ServiceCall { request =>
+    val test: String = "test"
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    //ref.ask(Hello(test))
+    db.run( repository.assetCreate(Asset(2, "bookstore")) )
+  }
+
+  override def updateAsset(id: Int) = ServiceCall { request =>
+    val test: String = "test"
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    //ref.ask(Hello(test)) // Asset]
+    db.run( repository.assetUpdate(id, Asset(2, "bookstore")) )
+  }
+  override def deleteAsset(id: Int) = ServiceCall { request =>
+    val test: String = "test"
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    //ref.ask(Hello(test)) // Asset]
+    db.run( repository.assetRemove(id) )
+  }
+
+
 
   override def createAssetEntry(id: Int) = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    Future(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now()))
+    db.run(
+      repository.entryCreate(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now())))
   }
   override def updateAssetEntry(assetId: Int, id: Int) = ServiceCall {
     request =>
       val test: String = "test"
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-      Future(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now()))
+      db.run(
+        repository.entryUpdate(id, Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now())))
+
   }
   override def deleteAssetEntry(assetId: Int, id: Int) = ServiceCall {
     request =>
       val test: String = "test"
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-      Future(1)
+      db.run( repository.entryRemove(id) )
   }
 
 // 1.2 The company wants to know when the store was open

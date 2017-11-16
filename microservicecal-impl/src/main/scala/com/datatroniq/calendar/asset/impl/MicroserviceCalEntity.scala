@@ -33,6 +33,54 @@ class MicroserviceCalEntity extends PersistentEntity {
               ctx.reply(Done)
             }
         }
+        .onCommand[AssetCreate, Done] {
+          case (AssetCreate(asset), ctx, state) =>
+            ctx.thenPersist(
+              AssetCreate(asset)
+            ) { _ =>
+              ctx.reply(Done)
+            }
+        }
+        .onCommand[AssetUpdate, Done] {
+          case (AssetUpdate(asset), ctx, state) =>
+            ctx.thenPersist(
+              AssetUpdate(asset)
+            ) { _ =>
+              ctx.reply(Done)
+            }
+        }
+        .onCommand[AssetDelete, Done] {
+          case (AssetDelete(asset), ctx, state) =>
+            ctx.thenPersist(
+              AssetDelete(asset)
+            ) { _ =>
+              ctx.reply(Done)
+            }
+        }
+        .onCommand[AssetEntryCreate, Done] {
+          case (AssetEntryCreate(entry), ctx, state) =>
+            ctx.thenPersist(
+              AssetEntryCreate(entry)
+            ) { _ =>
+              ctx.reply(Done)
+            }
+        }
+        .onCommand[AssetEntryUpdate, Done] {
+          case (AssetEntryUpdate(entry), ctx, state) =>
+            ctx.thenPersist(
+              AssetEntryUpdate(entry)
+            ) { _ =>
+              ctx.reply(Done)
+            }
+        }
+        .onCommand[AssetEntryDelete, Done] {
+          case (AssetEntryDelete(entry), ctx, state) =>
+            ctx.thenPersist(
+              AssetEntryDelete(entry)
+            ) { _ =>
+              ctx.reply(Done)
+            }
+        }
         .onReadOnlyCommand[Hello, String] {
           case (Hello(name), ctx, state) =>
             ctx.reply(
@@ -41,9 +89,32 @@ class MicroserviceCalEntity extends PersistentEntity {
                             "state" -> Json.toJson(state)))
                 .toString)
         }
+        .onReadOnlyCommand[Hello, String] {
+          case (AssetEntries(assetId), ctx, state) =>
+                        ctx.reply(
+                          Json.toJson(Map("state" -> Json.toJson(state))))
+        }
+        .onReadOnlyCommand[Hello, String] {
+          case (AssetsList(), ctx, state) =>
+                        ctx.reply(
+                          Json.toJson(Map("state" -> Json.toJson(state))))
+        }
+
         .onEvent {
           case (AssetMessageChanged(newMessage), state) =>
             MicroserviceCalState(newMessage, LocalDateTime.now().toString)
+          case (AssetCreated(asset), state) => 
+             MicroserviceCalState(asset, LocalDateTime.now().toString)
+          case (AssetUpdated(asset), state) => 
+             MicroserviceCalState(asset, LocalDateTime.now().toString)
+          case (AssetDeleted(asset), state) => 
+             MicroserviceCalState(asset, LocalDateTime.now().toString)
+          case (AssetEntryCreated(entry), state) => 
+             MicroserviceCalState(entry, LocalDateTime.now().toString)
+          case (AssetEntryUpdated(entry), state) => 
+             MicroserviceCalState(entry, LocalDateTime.now().toString)
+          case (AssetEntryDeleted(entry), state) => 
+             MicroserviceCalState(entry, LocalDateTime.now().toString)
         }
   }
 }
@@ -65,6 +136,8 @@ object UseAssetMessage {
 case class Hello(name: String) extends MicroserviceCalCommand[String]
 object Hello { implicit val format: Format[Hello] = Json.format }
 
+
+
 object MicroserviceCalSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[UseAssetMessage],
@@ -82,6 +155,9 @@ object MicroserviceCalSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[AssetDelete],
     JsonSerializer[AssetEntryCreate],
     JsonSerializer[AssetEntryUpdate],
-    JsonSerializer[AssetEntryDelete]
+    JsonSerializer[AssetEntryDelete],
+    JsonSerializer[AssetEntries],
+    JsonSerializer[AssetsList]
+
   )
 }
