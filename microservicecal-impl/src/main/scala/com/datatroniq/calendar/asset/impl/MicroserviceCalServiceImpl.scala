@@ -15,16 +15,36 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import slick.jdbc.JdbcBackend.Database
 
+import akka.Done
+import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
+import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
+import com.lightbend.lagom.scaladsl.persistence.slick.SlickReadSide
+import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
+import slick.dbio.DBIO
+import scala.concurrent.ExecutionContext
+
+class MicroserviceCalProcessor(readSide: SlickReadSide) extends ReadSideProcessor[MicroserviceCalEvent] {
+override def buildHandler(): ReadSideProcessor.ReadSideHandler[MicroserviceCalEvent] = {
+       val builder = readSide.builder[MicroserviceCalEvent]("blogsummaryoffset")
+       builder.build()
+}
+override def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] =
+  Set(MicroserviceCalEvent.Tag)
+
+}
+
+
 class MicroserviceCalServiceImpl(
-  persistentEntityRegistry: PersistentEntityRegistry,
-  //repository: MicroserviceCalEntityRepository
-  db: slick.jdbc.JdbcBackend.Database
+  persistentEntityRegistry: PersistentEntityRegistry
+  //db: slick.jdbc.JdbcBackend.Database
 ) extends AssetService {
 ///////
 //          Test commands
 ////
-  //readSide.register[MicroserviceCalEvent](MicroserviceCalEntityProcessor)
-
+  val repository = new MicroserviceCalEntityRepository
+  val db = Database.forConfig("default")
+  println(":::::::")
+  println(repository)
 
   override def hello(id: String) = ServiceCall { _ =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](id)
