@@ -29,7 +29,7 @@ class MicroserviceCalLoader extends LagomApplicationLoader {
 
 abstract class MicroserviceCalApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
-    with JdbcPersistenceComponents
+    with SlickPersistenceComponents
     with HikariCPComponents
     with LagomKafkaComponents
     with AhcWSComponents {

@@ -16,16 +16,21 @@ import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import slick.jdbc.JdbcBackend.Database
 
 import akka.Done
+import com.lightbend.lagom.scaladsl.persistence.ReadSide
 import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.slick.SlickReadSide
+import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcReadSide
 import com.lightbend.lagom.scaladsl.persistence.EventStreamElement
 import slick.dbio.DBIO
 import scala.concurrent.ExecutionContext
+import akka.persistence.query.Offset
+import com.lightbend.lagom.scaladsl.persistence.slick.SlickReadSide
+import _root_.slick.driver.JdbcProfile
+
 
 class MicroserviceCalProcessor(readSide: SlickReadSide) extends ReadSideProcessor[MicroserviceCalEvent] {
 override def buildHandler(): ReadSideProcessor.ReadSideHandler[MicroserviceCalEvent] = {
-       val builder = readSide.builder[MicroserviceCalEvent]("blogsummaryoffset")
+       val builder = readSide.builder[MicroserviceCalEvent]("microservicecal_offset")
        builder.build()
 }
 override def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] =
@@ -35,16 +40,20 @@ override def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] =
 
 
 class MicroserviceCalServiceImpl(
-  persistentEntityRegistry: PersistentEntityRegistry
+  persistentEntityRegistry: PersistentEntityRegistry,
+  readSide: ReadSide,
+  slickReadSide: SlickReadSide,
+  db: Database, 
+  val profile: JdbcProfile
   //db: slick.jdbc.JdbcBackend.Database
 ) extends AssetService {
-///////
-//          Test commands
-////
-  val repository = new MicroserviceCalEntityRepository
-  val db = Database.forConfig("default")
-  println(":::::::")
-  println(repository)
+
+  val repository = new MicroserviceCalEntityRepository(db, profile)
+  //val db = Database.forConfig("default")
+
+  readSide.register[MicroserviceCalEvent](
+    new MicroserviceCalEntityRepository.MicroserviceCalEntityProcessor(slickReadSide, db,profile))
+
 
   override def hello(id: String) = ServiceCall { _ =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](id)
