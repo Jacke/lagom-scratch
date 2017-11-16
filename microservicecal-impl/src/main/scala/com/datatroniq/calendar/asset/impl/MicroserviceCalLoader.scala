@@ -13,7 +13,6 @@ import com.softwaremill.macwire._
 import com.lightbend.lagom.scaladsl.persistence.slick._
 import _root_.slick.jdbc.JdbcBackend.Database
 
-
 class MicroserviceCalLoader extends LagomApplicationLoader {
 
   override def load(context: LagomApplicationContext): LagomApplication =
@@ -28,18 +27,16 @@ class MicroserviceCalLoader extends LagomApplicationLoader {
 }
 
 abstract class MicroserviceCalApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
+    extends LagomApplication(context)
     with SlickPersistenceComponents
     with HikariCPComponents
     with LagomKafkaComponents
     with AhcWSComponents {
-
   // Bind the service that this server provides
-  override lazy val lagomServer = serverFor[AssetService](wire[MicroserviceCalServiceImpl])
-
+  override lazy val lagomServer =
+    serverFor[AssetService](wire[MicroserviceCalServiceImpl])
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = MicroserviceCalSerializerRegistry
-
   // Register the hello-lagom persistent entity
   persistentEntityRegistry.register(wire[MicroserviceCalEntity])
 }

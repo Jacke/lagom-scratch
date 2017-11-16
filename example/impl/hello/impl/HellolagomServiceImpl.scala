@@ -5,12 +5,16 @@ import com.example.hello.api.{HellolagomService}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
-import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
+import com.lightbend.lagom.scaladsl.persistence.{
+  EventStreamElement,
+  PersistentEntityRegistry
+}
 
 /**
   * Implementation of the HellolagomService.
   */
-class HellolagomServiceImpl(persistentEntityRegistry: PersistentEntityRegistry) extends HellolagomService {
+class HellolagomServiceImpl(persistentEntityRegistry: PersistentEntityRegistry)
+    extends HellolagomService {
 
   override def hello(id: String) = ServiceCall { _ =>
     // Look up the hello-lagom entity for the given ID.
@@ -28,17 +32,18 @@ class HellolagomServiceImpl(persistentEntityRegistry: PersistentEntityRegistry) 
     ref.ask(UseGreetingMessage(request.message))
   }
 
-
   override def greetingsTopic(): Topic[api.GreetingMessageChanged] =
-    TopicProducer.singleStreamWithOffset {
-      fromOffset =>
-        persistentEntityRegistry.eventStream(HellolagomEvent.Tag, fromOffset)
-          .map(ev => (convertEvent(ev), ev.offset))
+    TopicProducer.singleStreamWithOffset { fromOffset =>
+      persistentEntityRegistry
+        .eventStream(HellolagomEvent.Tag, fromOffset)
+        .map(ev => (convertEvent(ev), ev.offset))
     }
 
-  private def convertEvent(helloEvent: EventStreamElement[HellolagomEvent]): api.GreetingMessageChanged = {
+  private def convertEvent(helloEvent: EventStreamElement[HellolagomEvent])
+    : api.GreetingMessageChanged = {
     helloEvent.event match {
-      case GreetingMessageChanged(msg) => api.GreetingMessageChanged(helloEvent.entityId, msg)
+      case GreetingMessageChanged(msg) =>
+        api.GreetingMessageChanged(helloEvent.entityId, msg)
     }
   }
 }

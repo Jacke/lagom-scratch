@@ -5,7 +5,10 @@ import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import org.scalatest.{AsyncWordSpec, BeforeAndAfterAll, Matchers}
 import com.datatroniq.calendar.asset.api._
 
-class MicroserviceCalServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
+class MicroserviceCalServiceSpec
+    extends AsyncWordSpec
+    with Matchers
+    with BeforeAndAfterAll {
 
   private val server = ServiceTest.startServer(
     ServiceTest.defaultSetup

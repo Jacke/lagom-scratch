@@ -3,9 +3,16 @@ package com.example.hello.impl
 import java.time.LocalDateTime
 
 import akka.Done
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
+import com.lightbend.lagom.scaladsl.persistence.{
+  AggregateEvent,
+  AggregateEventTag,
+  PersistentEntity
+}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
-import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
+import com.lightbend.lagom.scaladsl.playjson.{
+  JsonSerializer,
+  JsonSerializerRegistry
+}
 import play.api.libs.json.{Format, Json}
 
 import scala.collection.immutable.Seq
@@ -38,43 +45,48 @@ class HellolagomEntity extends PersistentEntity {
   /**
     * The initial state. This is used if there is no snapshotted state to be found.
     */
-  override def initialState: HellolagomState = HellolagomState("Hello", LocalDateTime.now.toString)
+  override def initialState: HellolagomState =
+    HellolagomState("Hello", LocalDateTime.now.toString)
 
   /**
     * An entity can define different behaviours for different states, so the behaviour
     * is a function of the current state to a set of actions.
     */
   override def behavior: Behavior = {
-    case HellolagomState(message, _) => Actions().onCommand[UseGreetingMessage, Done] {
+    case HellolagomState(message, _) =>
+      Actions()
+        .onCommand[UseGreetingMessage, Done] {
 
-      // Command handler for the UseGreetingMessage command
-      case (UseGreetingMessage(newMessage), ctx, state) =>
-        // In response to this command, we want to first persist it as a
-        // GreetingMessageChanged event
-        ctx.thenPersist(
-          GreetingMessageChanged(newMessage)
-        ) { _ =>
-          // Then once the event is successfully persisted, we respond with done.
-          ctx.reply(Done)
+          // Command handler for the UseGreetingMessage command
+          case (UseGreetingMessage(newMessage), ctx, state) =>
+            // In response to this command, we want to first persist it as a
+            // GreetingMessageChanged event
+            ctx.thenPersist(
+              GreetingMessageChanged(newMessage)
+            ) { _ =>
+              // Then once the event is successfully persisted, we respond with done.
+              ctx.reply(Done)
+            }
+
         }
+        .onReadOnlyCommand[Hello, String] {
 
-    }.onReadOnlyCommand[Hello, String] {
+          // Command handler for the Hello command
+          case (Hello(name), ctx, state) =>
+            // Reply with a message built from the current message, and the name of
+            // the person we're meant to say hello to.
+            ctx.reply(s"$message, $name!")
 
-      // Command handler for the Hello command
-      case (Hello(name), ctx, state) =>
-        // Reply with a message built from the current message, and the name of
-        // the person we're meant to say hello to.
-        ctx.reply(s"$message, $name!")
+        }
+        .onEvent {
 
-    }.onEvent {
+          // Event handler for the GreetingMessageChanged event
+          case (GreetingMessageChanged(newMessage), state) =>
+            // We simply update the current state to use the greeting message from
+            // the event.
+            HellolagomState(newMessage, LocalDateTime.now().toString)
 
-      // Event handler for the GreetingMessageChanged event
-      case (GreetingMessageChanged(newMessage), state) =>
-        // We simply update the current state to use the greeting message from
-        // the event.
-        HellolagomState(newMessage, LocalDateTime.now().toString)
-
-    }
+        }
   }
 }
 
@@ -84,6 +96,7 @@ class HellolagomEntity extends PersistentEntity {
 case class HellolagomState(message: String, timestamp: String)
 
 object HellolagomState {
+
   /**
     * Format for the hello state.
     *

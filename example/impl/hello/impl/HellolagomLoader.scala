@@ -24,13 +24,14 @@ class HellolagomLoader extends LagomApplicationLoader {
 }
 
 abstract class HellolagomApplication(context: LagomApplicationContext)
-  extends LagomApplication(context)
+    extends LagomApplication(context)
     with CassandraPersistenceComponents
     with LagomKafkaComponents
     with AhcWSComponents {
 
   // Bind the service that this server provides
-  override lazy val lagomServer = serverFor[HellolagomService](wire[HellolagomServiceImpl])
+  override lazy val lagomServer =
+    serverFor[HellolagomService](wire[HellolagomServiceImpl])
 
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = HellolagomSerializerRegistry
