@@ -47,21 +47,6 @@ class MicroserviceCalServiceImpl(
       db,
       profile))
 
-  override def hello(id: String) = ServiceCall { _ =>
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](id)
-    ref.ask(Hello(id))
-  }
-  override def useGreeting(id: String) = ServiceCall { request =>
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](id)
-    ref.ask(UseAssetMessage(request.message))
-  }
-  override def greetingsTopic(): Topic[api.AssetMessageChanged] =
-    TopicProducer.singleStreamWithOffset { fromOffset =>
-      persistentEntityRegistry
-        .eventStream(MicroserviceCalEvent.Tag, fromOffset)
-        .map(ev => (convertEvent(ev), ev.offset))
-    }
-
 
 
 
@@ -74,6 +59,7 @@ class MicroserviceCalServiceImpl(
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     ref.ask(AssetsList()) // List[Asset]]
+    persistToDb(action: DBIO[_])
     //db.run(repository.selectAssets() )
   }
   override def getAsset(assetId: Int) = ServiceCall { request =>
@@ -89,6 +75,7 @@ class MicroserviceCalServiceImpl(
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     ref.ask(AssetEntries(assetId)) // List[Entry]]
+    persistToDb(action: DBIO[_])
     //db.run (repository.selectEntryByAsset(assetId) )
   }
 
@@ -109,12 +96,14 @@ class MicroserviceCalServiceImpl(
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     ref.ask(AssetUpdate(id, request)) // Asset]
+    persistToDb(action: DBIO[_])
     //db.run( repository.assetUpdate(id, Asset(2, "bookstore")) )
   }
   override def deleteAsset(id: Int) = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     ref.ask(AssetDelete(id)) // Asset]
+    persistToDb(action: DBIO[_])
     //db.run( repository.assetRemove(id) )
   }
 
@@ -136,6 +125,7 @@ class MicroserviceCalServiceImpl(
       val test: String = "test"
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
       ref.ask(AssetEntryUpdate(request))
+      persistToDb(action: DBIO[_])
       //db.run(
       //  repository.entryUpdate(id, Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now())))
 
@@ -146,6 +136,8 @@ class MicroserviceCalServiceImpl(
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
       //db.run( repository.entryRemove(id) )
       ref.ask(AssetEntryDelete(id))
+      persistToDb(action: DBIO[_])
+
   }
 
 // 1.2 The company wants to know when the store was open
@@ -158,13 +150,7 @@ class MicroserviceCalServiceImpl(
         Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now()))))
   }
 
-  private def convertEvent(helloEvent: EventStreamElement[MicroserviceCalEvent])
-    : api.AssetMessageChanged = {
-    helloEvent.event match {
-      case AssetMessageChanged(msg) =>
-        api.AssetMessageChanged(helloEvent.entityId, msg)
-    }
-  }
+
 
   private def persistToDb(action: DBIO[_]) = {
     if (true) {

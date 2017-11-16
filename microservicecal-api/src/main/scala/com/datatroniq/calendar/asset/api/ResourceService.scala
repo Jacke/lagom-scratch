@@ -22,7 +22,6 @@ case class Entry(id: Option[Int] = None, asset_id: Int, name: String, from: Date
 trait AssetService extends Service {
   import com.datatroniq.calendar.utils.Formats._
 
-  def hello(id: String): ServiceCall[NotUsed, String]
 // 1.1 The employee manages the calendar for his book store
   def getAllAssets(): ServiceCall[NotUsed, List[Asset]]
   def getAsset(assetId: Int): ServiceCall[NotUsed, String]

@@ -28,14 +28,6 @@ class MicroserviceCalEntity extends PersistentEntity {
   override def behavior: Behavior = {
     case MicroserviceCalState(message, assets, entries, _) =>
       Actions()
-        .onCommand[UseAssetMessage, Done] {
-          case (UseAssetMessage(newMessage), ctx, state) =>
-            ctx.thenPersist(
-              AssetMessageChanged(newMessage)
-            ) { _ =>
-              ctx.reply(Done)
-            }
-        }
         .onCommand[AssetCreate, Asset] {
           case (AssetCreate(asset), ctx, state) =>
             ctx.thenPersist(
@@ -111,8 +103,6 @@ class MicroserviceCalEntity extends PersistentEntity {
         }
 
         .onEvent {
-          case (AssetMessageChanged(newMessage), state) =>
-            MicroserviceCalState(newMessage, state.assets, state.entries, LocalDateTime.now().toString)
           // Assets
           case (AssetCreated(newAsset), state) => 
              MicroserviceCalState(state.message, (newAsset :: state.assets), state.entries, LocalDateTime.now().toString)
@@ -138,25 +128,10 @@ object MicroserviceCalState {
   implicit val format: Format[MicroserviceCalState] = Json.format
 }
 
-case class AssetMessageChanged(message: String) extends MicroserviceCalEvent
-object AssetMessageChanged {
-  implicit val format: Format[AssetMessageChanged] = Json.format
-}
-// Commands
-case class UseAssetMessage(message: String) extends MicroserviceCalCommand[Done]
-object UseAssetMessage {
-  implicit val format: Format[UseAssetMessage] = Json.format
-}
-case class Hello(name: String) extends MicroserviceCalCommand[String]
-object Hello { implicit val format: Format[Hello] = Json.format }
-
 
 
 object MicroserviceCalSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
-    JsonSerializer[UseAssetMessage],
-    JsonSerializer[Hello],
-    JsonSerializer[AssetMessageChanged],
     JsonSerializer[MicroserviceCalState],
     JsonSerializer[AssetCreated],
     JsonSerializer[AssetUpdated],
