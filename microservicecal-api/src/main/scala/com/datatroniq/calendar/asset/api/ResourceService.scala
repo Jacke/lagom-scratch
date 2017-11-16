@@ -14,17 +14,13 @@ object AssetService {
   val TOPIC_NAME = "Assets"
 }
 case class Asset(id: Int, name: String)
-case class Availability(from: Int, end: Int)
+case class Availability(from: DateTime, end: DateTime)
 case class AssetAvailabilityWrapper(assetId: Int,
                                     availability: List[Availability])
-case class Entry(id: Int, asset_id: Int, name: String, from: Int, end: Int)
+case class Entry(id: Int, asset_id: Int, name: String, from: DateTime, end: DateTime)
 
 trait AssetService extends Service {
-  implicit val format: Format[Asset] = Json.format[Asset]
-  implicit val format2: Format[Availability] = Json.format[Availability]
-  implicit val format3: Format[AssetAvailabilityWrapper] =
-    Json.format[AssetAvailabilityWrapper]
-  implicit val format4: Format[Entry] = Json.format[Entry]
+  import com.datatroniq.calendar.utils.Formats._
 
   def hello(id: String): ServiceCall[NotUsed, String]
 // 1.1 The employee manages the calendar for his book store

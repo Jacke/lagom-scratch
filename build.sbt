@@ -21,6 +21,8 @@ val postgres = "org.postgresql" % "postgresql" % "9.4.1212"
 val slick = "com.typesafe.slick" %% "slick" % "3.2.1"
 val nop = "org.slf4j" % "slf4j-nop" % "1.6.4"
 val hikari = "com.typesafe.slick" %% "slick-hikaricp" % "3.2.1"
+val json = "com.typesafe.play" %% "play-json" % "2.6.7"
+val jsonjoda = "com.typesafe.play" %% "play-json-joda" % "2.6.7"
 
 val slickjoda = "com.github.tototoshi" %% "slick-joda-mapper" % "2.3.0"
 val jodaconvert = "org.joda" % "joda-convert" % "1.7"
@@ -30,7 +32,7 @@ lazy val `microservicecal` = (project in file("."))
 
 lazy val `microservicecal-api` = (project in file("microservicecal-api"))
   .settings(
-    libraryDependencies ++= Seq(lagomScaladslApi)
+    libraryDependencies ++= Seq(lagomScaladslApi, json, jsonjoda)
   )
 
 lazy val `microservicecal-impl` = (project in file("microservicecal-impl"))
@@ -49,7 +51,7 @@ lazy val `microservicecal-impl` = (project in file("microservicecal-impl"))
       //   slick,
       nop,
       //   hikari,
-      //    slickjoda,
+      slickjoda,
       jodaconvert
     )
   )

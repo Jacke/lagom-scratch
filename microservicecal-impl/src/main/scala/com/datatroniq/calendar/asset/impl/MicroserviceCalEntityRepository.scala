@@ -16,7 +16,7 @@ import _root_.slick.driver.JdbcProfile
 import _root_.slick.driver.PostgresDriver.api._
 import _root_.slick.model._
 
-//import com.github.tototoshi.slick.PostgresJodaSupport._
+import com.github.tototoshi.slick.PostgresJodaSupport._
 import com.lightbend.lagom.scaladsl.persistence.slick._
 import org.joda.time.DateTime
 
@@ -53,8 +53,8 @@ trait Tables {
     def id = column[Int]("id", O.PrimaryKey)
     def asset_id = column[Int]("asset_id")
     def name = column[String]("name")
-    def from = column[Int]("from")
-    def end = column[Int]("end")
+    def from = column[org.joda.time.DateTime]("from")
+    def end = column[org.joda.time.DateTime]("end")
 
     def asset =
       foreignKey("ASSET_FK", asset_id, assets)(

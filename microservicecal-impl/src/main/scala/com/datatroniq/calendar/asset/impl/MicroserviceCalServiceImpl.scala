@@ -114,19 +114,19 @@ class MicroserviceCalServiceImpl(
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // List[Entry]]
-    Future(List(Entry(1, 2, "test entry", 1, 1)))
+    Future(List(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now())))
   }
 
   override def createAssetEntry(id: Int) = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    Future(Entry(1, 2, "test entry", 1, 1))
+    Future(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now()))
   }
   override def updateAssetEntry(assetId: Int, id: Int) = ServiceCall {
     request =>
       val test: String = "test"
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-      Future(Entry(1, 2, "test entry", 1, 1))
+      Future(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now()))
   }
   override def deleteAssetEntry(assetId: Int, id: Int) = ServiceCall {
     request =>
@@ -141,7 +141,8 @@ class MicroserviceCalServiceImpl(
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
     //ref.ask(Hello(test)) // AssetAvailabilityWrapper
     Future(
-      AssetAvailabilityWrapper(1, List(Availability(4, 2), Availability(4, 2))))
+      AssetAvailabilityWrapper(1, List(Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now()), 
+        Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now()))))
   }
 
   private def convertEvent(helloEvent: EventStreamElement[MicroserviceCalEvent])
