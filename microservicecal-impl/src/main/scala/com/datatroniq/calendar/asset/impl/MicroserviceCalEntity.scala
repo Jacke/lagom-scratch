@@ -35,52 +35,52 @@ class MicroserviceCalEntity extends PersistentEntity {
               ctx.reply(Done)
             }
         }
-        .onCommand[AssetCreate, Done] {
+        .onCommand[AssetCreate, Asset] {
           case (AssetCreate(asset), ctx, state) =>
             ctx.thenPersist(
               AssetCreated(asset)
             ) { _ =>
-              ctx.reply(Done)
+              ctx.reply(asset)
             }
         }
-        .onCommand[AssetUpdate, Done] {
-          case (AssetUpdate(asset), ctx, state) =>
+        .onCommand[AssetUpdate, Asset] {
+          case (AssetUpdate(id, asset), ctx, state) =>
             ctx.thenPersist(
               AssetUpdated(asset)
             ) { _ =>
-              ctx.reply(Done)
+              ctx.reply(asset)
             }
         }
-        .onCommand[AssetDelete, Done] {
-          case (AssetDelete(asset), ctx, state) =>
+        .onCommand[AssetDelete, Int] {
+          case (AssetDelete(id), ctx, state) =>
             ctx.thenPersist(
-              AssetDeleted(asset.id)
+              AssetDeleted(id)
             ) { _ =>
-              ctx.reply(Done)
+              ctx.reply(id)
             }
         }
-        .onCommand[AssetEntryCreate, Done] {
+        .onCommand[AssetEntryCreate, Entry] {
           case (AssetEntryCreate(entry), ctx, state) =>
             ctx.thenPersist(
               AssetEntryCreated(entry)
             ) { _ =>
-              ctx.reply(Done)
+              ctx.reply(entry)
             }
         }
-        .onCommand[AssetEntryUpdate, Done] {
+        .onCommand[AssetEntryUpdate, Entry] {
           case (AssetEntryUpdate(entry), ctx, state) =>
             ctx.thenPersist(
               AssetEntryUpdated(entry)
             ) { _ =>
-              ctx.reply(Done)
+              ctx.reply(entry)
             }
         }
-        .onCommand[AssetEntryDelete, Done] {
-          case (AssetEntryDelete(entry), ctx, state) =>
+        .onCommand[AssetEntryDelete, Int] {
+          case (AssetEntryDelete(id), ctx, state) =>
             ctx.thenPersist(
-              AssetEntryDeleted(entry.id)
+              AssetEntryDeleted(id)
             ) { _ =>
-              ctx.reply(Done)
+              ctx.reply(id)
             }
         }
         .onReadOnlyCommand[Hello, String] {
@@ -92,15 +92,17 @@ class MicroserviceCalEntity extends PersistentEntity {
                 .toString)
         }
 
-        .onReadOnlyCommand[AssetEntries, String] {
+        .onReadOnlyCommand[AssetEntries, List[Entry]] {
           case (AssetEntries(assetId), ctx, state) =>
-                        ctx.reply(
-                          Json.toJson(Map("state" -> Json.toJson(state))).toString)
+                        ctx.reply(state.entries.filter(e => e.asset_id == assetId))
         }
-        .onReadOnlyCommand[AssetsList, String] {
+        .onReadOnlyCommand[AssetsList, List[Asset]] {
           case (AssetsList(), ctx, state) =>
-                        ctx.reply(
-                          Json.toJson(Map("state" -> Json.toJson(state))).toString)
+                        ctx.reply(state.assets)
+        }
+        .onReadOnlyCommand[AssetGet, Option[Asset]] {
+          case (AssetGet(id), ctx, state) =>
+                ctx.reply(state.assets.find(a => a.id == id))
         }
 
         .onEvent {

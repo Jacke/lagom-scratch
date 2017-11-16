@@ -43,26 +43,26 @@ object AssetEntryDeleted {
  * Commands
  */
 
-case class AssetEntries(entryId: Int) extends MicroserviceCalCommand[String]
+case class AssetEntries(entryId: Int) extends MicroserviceCalCommand[List[Entry]]
 object AssetEntries {
   implicit val format4: Format[Entry] = Json.format[Entry]
   implicit val format: Format[AssetEntries] = Json.format
 }
 
 
-case class AssetEntryCreate(entry: Entry) extends MicroserviceCalCommand[Done]
+case class AssetEntryCreate(entry: Entry) extends MicroserviceCalCommand[Entry]
 object AssetEntryCreate {
   implicit val format4: Format[Entry] = Json.format[Entry]
   implicit val format: Format[AssetEntryCreate] = Json.format
 }
 
-case class AssetEntryUpdate(entry: Entry) extends MicroserviceCalCommand[Done]
+case class AssetEntryUpdate(entry: Entry) extends MicroserviceCalCommand[Entry]
 object AssetEntryUpdate {
   implicit val format4: Format[Entry] = Json.format[Entry]
   implicit val format: Format[AssetEntryUpdate] = Json.format
 }
 
-case class AssetEntryDelete(entry: Entry) extends MicroserviceCalCommand[Done]
+case class AssetEntryDelete(entryId: Int) extends MicroserviceCalCommand[Int]
 object AssetEntryDelete {
   implicit val format4: Format[Entry] = Json.format[Entry]
   implicit val format: Format[AssetEntryDelete] = Json.format

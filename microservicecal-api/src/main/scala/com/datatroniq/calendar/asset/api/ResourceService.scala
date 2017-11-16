@@ -25,14 +25,14 @@ trait AssetService extends Service {
   def hello(id: String): ServiceCall[NotUsed, String]
 // 1.1 The employee manages the calendar for his book store
   def getAllAssets(): ServiceCall[NotUsed, List[Asset]]
-  def getAsset(assetId: Int): ServiceCall[NotUsed, Asset]
-  def createAsset(): ServiceCall[NotUsed, Asset]
-  def updateAsset(id: Int): ServiceCall[NotUsed, Asset]
+  def getAsset(assetId: Int): ServiceCall[NotUsed, String]
+  def createAsset(): ServiceCall[Asset, Asset]
+  def updateAsset(id: Int): ServiceCall[Asset, Asset]
   def deleteAsset(id: Int): ServiceCall[NotUsed, Int]
 
   def getEntries(assetId: Int): ServiceCall[NotUsed, List[Entry]]
-  def createAssetEntry(id: Int): ServiceCall[NotUsed, Entry]
-  def updateAssetEntry(assetId: Int, id: Int): ServiceCall[NotUsed, Entry]
+  def createAssetEntry(id: Int): ServiceCall[Entry, Entry]
+  def updateAssetEntry(assetId: Int, id: Int): ServiceCall[Entry, Entry]
   def deleteAssetEntry(assetId: Int, id: Int): ServiceCall[NotUsed, Int]
 
 // 1.2 The company wants to know when the store was open
