@@ -15,13 +15,11 @@ object AssetService {
 }
 case class Asset(id: Option[Int] = None, name: String)
 case class Availability(from: DateTime, end: DateTime)
-case class AssetAvailabilityWrapper(assetId: Int,
-                                    availability: List[Availability])
+case class AssetAvailabilityWrapper(assetId: Int, availability: List[Availability])
 case class Entry(id: Option[Int] = None, asset_id: Int, name: String, from: DateTime, end: DateTime)
 
 trait AssetService extends Service {
   import com.datatroniq.calendar.utils.Formats._
-
 // 1.1 The employee manages the calendar for his book store
   def getAllAssets(): ServiceCall[NotUsed, List[Asset]]
   def getAsset(assetId: Int): ServiceCall[NotUsed, Asset]
@@ -33,10 +31,8 @@ trait AssetService extends Service {
   def createAssetEntry(id: Int): ServiceCall[Entry, Entry]
   def updateAssetEntry(assetId: Int, id: Int): ServiceCall[Entry, Entry]
   def deleteAssetEntry(assetId: Int, id: Int): ServiceCall[NotUsed, Int]
-
 // 1.2 The company wants to know when the store was open
-  def assetAvailability(
-      assetId: Int): ServiceCall[NotUsed, AssetAvailabilityWrapper]
+  def assetAvailability(assetId: Int): ServiceCall[NotUsed, AssetAvailabilityWrapper]
 
   
   override final def descriptor = {
@@ -55,13 +51,6 @@ trait AssetService extends Service {
         restCall(Method.DELETE, "/api/asset/:assetId/entry/:id", deleteAssetEntry _),
         restCall(Method.GET, "/api/asset/:id/availabilities", assetAvailability _)
       )
-      //.withTopics(
-      //  topic(AssetService.TOPIC_NAME, greetingsTopic _)
-      //    .addProperty(
-      //      KafkaProperties.partitionKeyStrategy,
-      //      PartitionKeyStrategy[AssetMessageChanged](_.name)
-      //    )
-      //)
       .withAutoAcl(true)
     // @formatter:on
   }

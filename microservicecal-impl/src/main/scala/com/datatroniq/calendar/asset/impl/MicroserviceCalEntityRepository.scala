@@ -35,6 +35,7 @@ trait Tables {
   lazy val assets: TableQuery[Assets] = TableQuery[Assets]
 
   def assetCreate(a: Asset): DBIO[Asset] = (assets returning assets) += Asset(a.id, a.name)
+
   def assetUpdate(id: Int, assetToUpdate: Asset): DBIO[Asset] = {
     val q: Query[Assets, Asset, Seq] = assets.filter(_.id === id)
     for {
@@ -47,8 +48,11 @@ trait Tables {
       }
     } yield assetToUpdate
   }
+  
   def selectAssets(): DBIO[Seq[Asset]] = assets.result
+  
   def selectAsset(id: Int): DBIO[Option[Asset]] = assets.filter(_.id === id).result.headOption
+  
   def assetRemove(id: Int): DBIO[Int] = assets.filter(_.id === id).delete
 
 //case class Entry(id:Int, asset_id: Int, from: DateTime, end: DateTime)
@@ -70,13 +74,20 @@ trait Tables {
 
   def entryCreate(e: Entry): DBIO[Entry] =
     (entries returning entries) += Entry(e.id, e.asset_id, e.name, e.from, e.end)
+  
   def getEntry(id: Int): DBIO[Option[Entry]] = entries.filter(_.id === id).result.headOption
+  
   def getEntriesByAsset(asset_id: Int): DBIO[Seq[Entry]] = entries.filter(_.asset_id === asset_id).result
+  
   def selectEntries(): DBIO[Seq[Entry]] = entries.result
+  
   def selectEntry(id: Int): DBIO[Option[Entry]] = entries.filter(_.id === id).result.headOption
+  
   def selectEntryByAsset(asset_id: Int): DBIO[Seq[Entry]] =
     entries.filter(_.asset_id === asset_id).result
+  
   def entryRemove(id: Int): DBIO[Int] = entries.filter(_.id === id).delete
+  
   def entryUpdate(id: Int, entryToUpdate: Entry): DBIO[Entry] = {
     val q: Query[Entries, Entry, Seq] = entries.filter(_.id === id)
     for {
@@ -93,8 +104,7 @@ trait Tables {
       }
     } yield entryToUpdate
   }
-  def testStub[T](e: EventStreamElement[T]): DBIO[_] =
-    entries.filter(_.id === 1).delete
+  
 
   def createAllTable: DBIO[_] = MTable.getTables.flatMap { tables =>
       if (!tables.exists(_.name.name == "assets")) {
@@ -109,6 +119,7 @@ trait Tables {
 
 object MicroserviceCalEntityRepository {
   def apply(db: Database, profile: JdbcProfile)(implicit ec: ExecutionContext) = new MicroserviceCalEntityRepository(db, profile)
+  
   def processor(readSide: SlickReadSide, db: Database, profile: JdbcProfile) = new MicroserviceCalEntityProcessor(
       readSide,
       db,
@@ -120,34 +131,44 @@ object MicroserviceCalEntityRepository {
       val profile: JdbcProfile)(implicit val ec: ExecutionContext)
       extends ReadSideProcessor[MicroserviceCalEvent]
       with Tables {
+    
     def buildHandler(): ReadSideHandler[MicroserviceCalEvent] =
       readSide
         .builder[MicroserviceCalEvent]("test-entity-read-side")
         .setGlobalPrepare(createAllTable)
-        .setEventHandler(assetCreatedOp)
+        /*.setEventHandler(assetCreatedOp)
         .setEventHandler(assetUpdatedOp)
         .setEventHandler(assetDeletedOp)
         .setEventHandler(assetEntryCreatedOp)
         .setEventHandler(assetEntryUpdatedOp)
         .setEventHandler(assetEntryDeletedOp)
+        */
         .build()
 
     def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] =
       Set(MicroserviceCalEvent.Tag)
 
+    /*
     def assetCreatedOp(event: EventStreamElement[AssetCreated]) =
-      testStub(event)
+      assetCreate(event)
+    
     def assetUpdatedOp(event: EventStreamElement[AssetUpdated]) =
-      testStub(event)
+      assetUpdate(event.id, event.assetToUpdate)
+    
     def assetDeletedOp(event: EventStreamElement[AssetDeleted]) =
-      testStub(event)
+      assetRemove(event)
+    
     def assetEntryCreatedOp(event: EventStreamElement[AssetEntryCreated]) =
-      testStub(event)
+      entryCreate(event)
+    
     def assetEntryUpdatedOp(event: EventStreamElement[AssetEntryUpdated]) =
-      testStub(event)
+      entryUpdate(event.entry.id.get, event.entry)
+    
     def assetEntryDeletedOp(event: EventStreamElement[AssetEntryDeleted]) =
-      testStub(event)
-  }
+      entryRemove(event)
+    */
+    }   
+
 }
 
 class MicroserviceCalEntityRepository(db: Database, val profile: JdbcProfile)(
