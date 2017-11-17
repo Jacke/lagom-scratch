@@ -69,32 +69,21 @@ class MicroserviceCalServiceImpl(
 //  Update the Read-Side
   override def createAsset() = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
-      db.run(repository.assetCreate(request)).flatMap { db_result =>
-        ref.ask(AssetCreate(db_result)).map { r =>
-          r
-      }
-    }
+    ref.ask(AssetCreate(request)).flatMap { action => db.run(repository.assetCreate(request)) }
   }
 
   override def updateAsset(id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
-    ref.ask(AssetUpdate(id, request)).flatMap { _ => 
-      db.run(repository.assetUpdate(id, request))
-    }
+    ref.ask(AssetUpdate(id, request)).flatMap { action => db.run(repository.assetUpdate(id, request)) } 
   }
   override def deleteAsset(id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
-    ref.ask(AssetDelete(id)).flatMap { _ => 
-      db.run(repository.assetRemove(id))
-    }
+    ref.ask(AssetDelete(id))
+    ref.ask(AssetDelete(id)).flatMap { action => db.run(repository.assetRemove(id)) } 
+
   }
 
-  override def entryExceptionCreate() = ServiceCall { request =>
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
-    ref.ask(AssetEntryExceptionCreate(request)).flatMap { _ =>
-      db.run(repository.entryExceptionCreate(request))
-    }  
-  }
+
 
   override def getEntryExceptionsByEntry(entry_id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
@@ -102,7 +91,18 @@ class MicroserviceCalServiceImpl(
       db.run(repository.getEntryExceptionsByEntry(entry_id)).map(_.toList)
     }  
   }
-
+  override def entryExceptionCreate() = ServiceCall { request =>
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
+    ref.ask(AssetEntryExceptionCreate(request)).flatMap { _ =>
+      db.run(repository.entryExceptionCreate(request))
+    }  
+  }
+  override def entryExceptionUpdate(id:Int) = ServiceCall { request =>
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
+    ref.ask(AssetEntryExceptionUpdate(request)).flatMap { _ =>
+      db.run(repository.entryExceptionUpdate(id, request))
+    }  
+  }  
   def deleteEntryException(entry_id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     ref.ask(AssetEntryExceptionDelete(entry_id)).flatMap { _ => 
@@ -133,7 +133,7 @@ class MicroserviceCalServiceImpl(
         db.run(repository.entryUpdate(id, request))
       }
   }
-  
+
   override def deleteAssetEntry(asset_id: Int, id: Int) = ServiceCall {
     request =>
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")

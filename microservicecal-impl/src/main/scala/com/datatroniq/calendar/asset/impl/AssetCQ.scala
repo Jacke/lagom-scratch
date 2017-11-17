@@ -27,7 +27,11 @@ object AssetCreated {
   implicit val format0: Format[Asset] = Json.format[Asset]
   implicit val format: Format[AssetCreated] = Json.format
 }
-
+case class AssetCreatedDb(asset: Asset) extends MicroserviceCalEvent
+object AssetCreatedDb {
+  implicit val format0: Format[Asset] = Json.format[Asset]
+  implicit val format: Format[AssetCreatedDb] = Json.format
+}
 case class AssetUpdated(asset: Asset) extends MicroserviceCalEvent
 object AssetUpdated {
   implicit val format0: Format[Asset] = Json.format[Asset]

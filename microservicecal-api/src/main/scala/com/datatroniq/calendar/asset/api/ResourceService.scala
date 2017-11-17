@@ -62,9 +62,9 @@ trait AssetService extends Service {
   def deleteAssetEntry(assetId: Int, id: Int): ServiceCall[NotUsed, Int]
 
   def entryExceptionCreate(): ServiceCall[EntryException, EntryException]
+  def entryExceptionUpdate(id: Int): ServiceCall[EntryException, EntryException]
   def getEntryExceptionsByEntry(entry_id: Int): ServiceCall[NotUsed, List[EntryException]]
   def deleteEntryException(entry_id: Int): ServiceCall[EntryException, Int]
-//  def EntryException(entry_id: Int): ServiceCall[NotUsed, Int]
 
   implicit val format5: Format[EntryException] = Json.format[EntryException]
 
@@ -86,8 +86,9 @@ trait AssetService extends Service {
         restCall(Method.DELETE, "/api/asset/:id", deleteAsset _),
         restCall(Method.POST, "/api/asset/:id/entry", createAssetEntry _),
         restCall(Method.PUT, "/api/asset/:assetId/entry/:id", updateAssetEntry _),
-        restCall(Method.POST, "/api/entry/exception", entryExceptionCreate _),        
+
         restCall(Method.GET, "/api/entry/:entry_id/exception", getEntryExceptionsByEntry _),
+        restCall(Method.POST, "/api/entry/exception", entryExceptionCreate _),        
         restCall(Method.DELETE, "/api/entry/:entry_id/exception", deleteEntryException _),
 
         restCall(Method.DELETE, "/api/asset/:assetId/entry/:id", deleteAssetEntry _),

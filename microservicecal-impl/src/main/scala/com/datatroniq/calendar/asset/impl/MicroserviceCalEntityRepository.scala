@@ -34,6 +34,8 @@ trait Tables {
   }
   lazy val assets: TableQuery[Assets] = TableQuery[Assets]
 
+
+
   def assetCreate(a: Asset): DBIO[Asset] = (assets returning assets) += Asset(a.id, a.name)
 
   def assetUpdate(id: Int, assetToUpdate: Asset): DBIO[Asset] = {
@@ -48,12 +50,13 @@ trait Tables {
       }
     } yield assetToUpdate
   }
-  
+
+  def assetRemove(id: Int): DBIO[Int] = assets.filter(_.id === id).delete
+
   def selectAssets(): DBIO[Seq[Asset]] = assets.result
   
   def selectAsset(id: Int): DBIO[Option[Asset]] = assets.filter(_.id === id).result.headOption
   
-  def assetRemove(id: Int): DBIO[Int] = assets.filter(_.id === id).delete
 
 //case class Entry(id: Option[Int] = None, asset_id: Int, name: String, startDateUtc: DateTime, endDateUtc: DateTime, 
 //  duration: Int, isAllDay: Boolean = false, 
@@ -93,22 +96,37 @@ trait Tables {
   lazy val entry_exceptions: TableQuery[EntryExceptions] = TableQuery[EntryExceptions]
 
 
-  def entryCreate(e: Entry): DBIO[Entry] =
-    (entries returning entries) += e
+/*******
+ *  Entry exceptions
+ **/
+  def getEntryException(id: Int): DBIO[Option[EntryException]] = entry_exceptions.filter(_.id === id).result.headOption
 
   def entryExceptionCreate(e: EntryException): DBIO[EntryException] =
     (entry_exceptions returning entry_exceptions) += e
-  
-  
-  def getEntry(id: Int): DBIO[Option[Entry]] = entries.filter(_.id === id).result.headOption
 
-  def getEntryException(id: Int): DBIO[Option[EntryException]] = entry_exceptions.filter(_.id === id).result.headOption
-  
+  def entryExceptionUpdate(id: Int, entryExceptionToUpdate: EntryException): DBIO[EntryException] = {
+    val q: Query[EntryExceptions, EntryException, Seq] = entry_exceptions.filter(_.id === id)
+    for {
+      select <- q.result
+      updated <- select.headOption match {
+        case Some(entryException) =>
+          q.update(entryException.copy(id = Some(id) ))
+        case None =>
+          entry_exceptions += entryExceptionToUpdate.copy(id = None)
+      }
+    } yield entryExceptionToUpdate
+  }
+
   def removeEntryException(id: Int): DBIO[Int] = entry_exceptions.filter(_.id === id).delete
 
-  def getEntriesByAsset(asset_id: Int): DBIO[Seq[Entry]] = entries.filter(_.asset_id === asset_id).result
-
   def getEntryExceptionsByEntry(entry_id: Int): DBIO[Seq[EntryException]] = entry_exceptions.filter(_.entry_id === entry_id).result
+  
+/*******
+ *  Entries
+ *****/
+  def getEntry(id: Int): DBIO[Option[Entry]] = entries.filter(_.id === id).result.headOption  
+
+  def getEntriesByAsset(asset_id: Int): DBIO[Seq[Entry]] = entries.filter(_.asset_id === asset_id).result
 
   def selectEntries(): DBIO[Seq[Entry]] = entries.result
   
@@ -117,7 +135,9 @@ trait Tables {
   def selectEntryByAsset(asset_id: Int): DBIO[Seq[Entry]] =
     entries.filter(_.asset_id === asset_id).result
   
-  def entryRemove(id: Int): DBIO[Int] = entries.filter(_.id === id).delete
+
+  def entryCreate(e: Entry): DBIO[Entry] =
+    (entries returning entries) += e
   
   def entryUpdate(id: Int, entryToUpdate: Entry): DBIO[Entry] = {
     val q: Query[Entries, Entry, Seq] = entries.filter(_.id === id)
@@ -131,7 +151,8 @@ trait Tables {
       }
     } yield entryToUpdate
   }
-  
+  def entryRemove(id: Int): DBIO[Int] = entries.filter(_.id === id).delete
+
 
   def createAllTable: DBIO[_] = MTable.getTables.flatMap { tables =>
       if (!tables.exists(_.name.name == "assets")) {
@@ -142,13 +163,13 @@ trait Tables {
       } else {
         DBIO.successful(())
       }
-    }.transactionally
+  }.transactionally
 
 }
 
 object MicroserviceCalEntityRepository {
   def apply(db: Database, profile: JdbcProfile)(implicit ec: ExecutionContext) = new MicroserviceCalEntityRepository(db, profile)
-  
+
   def processor(readSide: SlickReadSide, db: Database, profile: JdbcProfile) = new MicroserviceCalEntityProcessor(
       readSide,
       db,
@@ -165,39 +186,11 @@ object MicroserviceCalEntityRepository {
       readSide
         .builder[MicroserviceCalEvent]("test-entity-read-side")
         .setGlobalPrepare(createAllTable)
-        /*.setEventHandler(assetCreatedOp)
-        .setEventHandler(assetUpdatedOp)
-        .setEventHandler(assetDeletedOp)
-        .setEventHandler(assetEntryCreatedOp)
-        .setEventHandler(assetEntryUpdatedOp)
-        .setEventHandler(assetEntryDeletedOp)
-        */
         .build()
 
     def aggregateTags: Set[AggregateEventTag[MicroserviceCalEvent]] =
       Set(MicroserviceCalEvent.Tag)
-
-    /*
-    def assetCreatedOp(event: EventStreamElement[AssetCreated]) =
-      assetCreate(event)
-    
-    def assetUpdatedOp(event: EventStreamElement[AssetUpdated]) =
-      assetUpdate(event.id, event.assetToUpdate)
-    
-    def assetDeletedOp(event: EventStreamElement[AssetDeleted]) =
-      assetRemove(event)
-    
-    def assetEntryCreatedOp(event: EventStreamElement[AssetEntryCreated]) =
-      entryCreate(event)
-    
-    def assetEntryUpdatedOp(event: EventStreamElement[AssetEntryUpdated]) =
-      entryUpdate(event.entry.id.get, event.entry)
-    
-    def assetEntryDeletedOp(event: EventStreamElement[AssetEntryDeleted]) =
-      entryRemove(event)
-    */
     }   
-
 }
 
 class MicroserviceCalEntityRepository(db: Database, val profile: JdbcProfile)(
