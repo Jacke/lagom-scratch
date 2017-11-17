@@ -104,9 +104,11 @@ trait Tables {
 
   def getEntryException(id: Int): DBIO[Option[EntryException]] = entry_exceptions.filter(_.id === id).result.headOption
   
+  def removeEntryException(id: Int): DBIO[Int] = entry_exceptions.filter(_.id === id).delete
+
   def getEntriesByAsset(asset_id: Int): DBIO[Seq[Entry]] = entries.filter(_.asset_id === asset_id).result
 
-  def getEntryExceptionByEntry(entry_id: Int): DBIO[Seq[EntryException]] = entry_exceptions.filter(_.entry_id === entry_id).result
+  def getEntryExceptionsByEntry(entry_id: Int): DBIO[Seq[EntryException]] = entry_exceptions.filter(_.entry_id === entry_id).result
 
   def selectEntries(): DBIO[Seq[Entry]] = entries.result
   
@@ -125,11 +127,7 @@ trait Tables {
         case Some(entry) =>
           q.update(entryToUpdate.copy(id = Some(id) ))
         case None =>
-          entries += Entry(entryToUpdate.id,
-                           entryToUpdate.asset_id,
-                           entryToUpdate.name,
-                           entryToUpdate.from,
-                           entryToUpdate.end)
+          entries += entryToUpdate.copy(id = None)
       }
     } yield entryToUpdate
   }

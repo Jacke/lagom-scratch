@@ -48,17 +48,15 @@ class MicroserviceCalServiceImpl(
  */
 // Query the Read-Side Database
   override def getAllAssets() = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     ref.ask(AssetsList()).flatMap { _ =>
       db.run(repository.selectAssets()).map(_.toList)
     }
   }
-  override def getAsset(assetId: Int) = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    ref.ask(AssetGet(assetId)).flatMap { r =>
-      db.run(repository.selectAsset(assetId)).map { optR => 
+  override def getAsset(asset_id: Int) = ServiceCall { request =>
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
+    ref.ask(AssetGet(asset_id)).flatMap { r =>
+      db.run(repository.selectAsset(asset_id)).map { optR => 
         optR match {
           case Some(asset) => asset
           case _ => r
@@ -67,19 +65,10 @@ class MicroserviceCalServiceImpl(
     }
   }
 
-  override def getEntries(assetId: Int) = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    ref.ask(AssetEntries(assetId)).flatMap { _ =>
-      db.run(repository.selectEntryByAsset(assetId)).map(_.toList)
-    }  
-  }
-
 
 //  Update the Read-Side
   override def createAsset() = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
       db.run(repository.assetCreate(request)).flatMap { db_result =>
         ref.ask(AssetCreate(db_result)).map { r =>
           r
@@ -88,54 +77,74 @@ class MicroserviceCalServiceImpl(
   }
 
   override def updateAsset(id: Int) = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     ref.ask(AssetUpdate(id, request)).flatMap { _ => 
       db.run(repository.assetUpdate(id, request))
     }
   }
   override def deleteAsset(id: Int) = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     ref.ask(AssetDelete(id)).flatMap { _ => 
       db.run(repository.assetRemove(id))
     }
   }
 
+  override def entryExceptionCreate() = ServiceCall { request =>
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
+    ref.ask(AssetEntryExceptionCreate(request)).flatMap { _ =>
+      db.run(repository.entryExceptionCreate(request))
+    }  
+  }
 
+  override def getEntryExceptionsByEntry(entry_id: Int) = ServiceCall { request =>
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
+    ref.ask(AssetEntryExceptions(entry_id)).flatMap { _ =>
+      db.run(repository.getEntryExceptionsByEntry(entry_id)).map(_.toList)
+    }  
+  }
+
+  def deleteEntryException(entry_id: Int) = ServiceCall { request =>
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
+    ref.ask(AssetEntryExceptionDelete(entry_id)).flatMap { _ => 
+      db.run(repository.removeEntryException(entry_id))
+    }
+  }
+
+  override def getEntries(asset_id: Int) = ServiceCall { request =>
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
+    ref.ask(AssetEntries(asset_id)).flatMap { _ =>
+      db.run(repository.selectEntryByAsset(asset_id)).map(_.toList)
+    }  
+  }
 
   override def createAssetEntry(id: Int) = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     db.run(repository.entryCreate(request)).flatMap { db_result =>
         ref.ask(AssetEntryCreate(db_result)).map { r =>
           r
       }
     }
   }
-  override def updateAssetEntry(assetId: Int, id: Int) = ServiceCall {
+
+  override def updateAssetEntry(asset_id: Int, id: Int) = ServiceCall {
     request =>
-      val test: String = "test"
-      val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+      val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
       ref.ask(AssetEntryUpdate(request)).flatMap { _ =>
         db.run(repository.entryUpdate(id, request))
       }
   }
-  override def deleteAssetEntry(assetId: Int, id: Int) = ServiceCall {
+  
+  override def deleteAssetEntry(asset_id: Int, id: Int) = ServiceCall {
     request =>
-      val test: String = "test"
-      val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
+      val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
       ref.ask(AssetEntryDelete(id)).flatMap { _ =>
         db.run(repository.entryRemove(id))
       }
-
   }
 
 // 1.2 The company wants to know when the store was open
-  override def assetAvailability(assetId: Int) = ServiceCall { request =>
-    val test: String = "test"
-    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    //ref.ask(Hello(test)) // AssetAvailabilityWrapper
+  override def assetAvailability(asset_id: Int) = ServiceCall { request =>
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     Future(
       AssetAvailabilityWrapper(1, List(Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now()), 
         Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now()))))

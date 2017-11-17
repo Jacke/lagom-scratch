@@ -8,6 +8,8 @@ import com.lightbend.lagom.scaladsl.api.broker.kafka.{
 }
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.{Format, Json}
+import play.api.libs.json.JodaReads._
+import play.api.libs.json.JodaWrites._
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import org.joda.time.DateTime
 object AssetService {
@@ -58,6 +60,15 @@ trait AssetService extends Service {
   def createAssetEntry(id: Int): ServiceCall[Entry, Entry]
   def updateAssetEntry(assetId: Int, id: Int): ServiceCall[Entry, Entry]
   def deleteAssetEntry(assetId: Int, id: Int): ServiceCall[NotUsed, Int]
+
+  def entryExceptionCreate(): ServiceCall[EntryException, EntryException]
+  def getEntryExceptionsByEntry(entry_id: Int): ServiceCall[NotUsed, List[EntryException]]
+  def deleteEntryException(entry_id: Int): ServiceCall[EntryException, Int]
+//  def EntryException(entry_id: Int): ServiceCall[NotUsed, Int]
+
+  implicit val format5: Format[EntryException] = Json.format[EntryException]
+
+
 // 1.2 The company wants to know when the store was open
   def assetAvailability(assetId: Int): ServiceCall[NotUsed, AssetAvailabilityWrapper]
 
@@ -75,6 +86,10 @@ trait AssetService extends Service {
         restCall(Method.DELETE, "/api/asset/:id", deleteAsset _),
         restCall(Method.POST, "/api/asset/:id/entry", createAssetEntry _),
         restCall(Method.PUT, "/api/asset/:assetId/entry/:id", updateAssetEntry _),
+        restCall(Method.POST, "/api/entry/exception", entryExceptionCreate _),        
+        restCall(Method.GET, "/api/entry/:entry_id/exception", getEntryExceptionsByEntry _),
+        restCall(Method.DELETE, "/api/entry/:entry_id/exception", deleteEntryException _),
+
         restCall(Method.DELETE, "/api/asset/:assetId/entry/:id", deleteAssetEntry _),
         restCall(Method.GET, "/api/asset/:id/availabilities", assetAvailability _)
       )
@@ -83,12 +98,3 @@ trait AssetService extends Service {
   }
 }
 
-case class AssetMessage(message: String)
-object AssetMessage {
-  implicit val format: Format[AssetMessage] = Json.format[AssetMessage]
-}
-case class AssetMessageChanged(name: String, message: String)
-object AssetMessageChanged {
-  implicit val format: Format[AssetMessageChanged] =
-    Json.format[AssetMessageChanged]
-}

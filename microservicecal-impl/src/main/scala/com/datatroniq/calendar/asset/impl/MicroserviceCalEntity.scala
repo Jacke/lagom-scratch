@@ -24,9 +24,9 @@ class MicroserviceCalEntity extends PersistentEntity {
   override type State = MicroserviceCalState
 
   override def initialState: MicroserviceCalState =
-    MicroserviceCalState("Event", List(), List(), LocalDateTime.now.toString)
+    MicroserviceCalState("Event", List(), List(), List(), LocalDateTime.now.toString)
   override def behavior: Behavior = {
-    case MicroserviceCalState(message, assets, entries, _) =>
+    case MicroserviceCalState(message, assets, entries, entry_exceptions, _) =>
       Actions()
         .onCommand[AssetCreate, Asset] {
           case (AssetCreate(asset), ctx, state) =>
@@ -77,6 +77,24 @@ class MicroserviceCalEntity extends PersistentEntity {
             }
         }
 
+        .onCommand[AssetEntryExceptionCreate, EntryException] {
+          case (AssetEntryExceptionCreate(entryException), ctx, state) =>
+            ctx.thenPersist(
+              AssetEntryExceptionCreated(entryException)
+            ) { _ =>
+              ctx.reply(entryException)
+            }
+        }
+        .onCommand[AssetEntryExceptionDelete, Int] {
+          case (AssetEntryExceptionDelete(id), ctx, state) =>
+            ctx.thenPersist(
+              AssetEntryExceptionDeleted(id)
+            ) { _ =>
+              ctx.reply(id)
+            }
+        }
+
+
         .onReadOnlyCommand[AssetEntries, List[Entry]] {
           case (AssetEntries(assetId), ctx, state) =>
                         ctx.reply(state.entries.filter(e => e.asset_id == assetId))
@@ -93,30 +111,47 @@ class MicroserviceCalEntity extends PersistentEntity {
             }
           }
         }
+        .onReadOnlyCommand[AssetEntryExceptions, List[EntryException]] {
+          case (AssetEntryExceptions(entry_id), ctx, state) => {
+            state.entry_exceptions.filter(ee => ee.entry_id == entry_id)
+          }
+        }
 
         .onEvent {
           // Assets
           case (AssetCreated(newAsset), state) => 
-             MicroserviceCalState(state.message, (newAsset :: state.assets), state.entries, LocalDateTime.now().toString)
+             MicroserviceCalState(state.message, (newAsset :: state.assets), state.entries, state.entry_exceptions, LocalDateTime.now().toString)
           case (AssetUpdated(assetUpdated), state) => 
-             MicroserviceCalState(state.message, (assetUpdated :: state.assets.filter(a => a.id != assetUpdated.id)), state.entries, LocalDateTime.now().toString)
+             MicroserviceCalState(state.message, (assetUpdated :: state.assets.filter(a => a.id != assetUpdated.id)), state.entries, state.entry_exceptions, LocalDateTime.now().toString)
           case (AssetDeleted(assetRemovedId), state) => 
-             state.copy(state.message, state.assets.filter(a => a.id != assetRemovedId), state.entries, LocalDateTime.now().toString)
+             state.copy(state.message, state.assets.filter(a => a.id != assetRemovedId), state.entries, state.entry_exceptions, LocalDateTime.now().toString)
+          
           // Entries
           case (AssetEntryCreated(newEntry), state) => 
-             MicroserviceCalState(state.message, state.assets, (newEntry :: state.entries), LocalDateTime.now().toString)
+             MicroserviceCalState(state.message, state.assets, (newEntry :: state.entries), state.entry_exceptions, LocalDateTime.now().toString)
           case (AssetEntryUpdated(entryUpdated), state) => 
-             MicroserviceCalState(state.message, state.assets, (entryUpdated :: state.entries.filter(a => a.id != entryUpdated.id)), LocalDateTime.now().toString)
+             MicroserviceCalState(state.message, state.assets, (entryUpdated :: state.entries.filter(a => a.id != entryUpdated.id)), state.entry_exceptions, LocalDateTime.now().toString)
           case (AssetEntryDeleted(entryRemovedId), state) => 
-             MicroserviceCalState(state.message, state.assets, state.entries.filter(a => a.id != entryRemovedId), LocalDateTime.now().toString)
+             MicroserviceCalState(state.message, state.assets, state.entries.filter(a => a.id != entryRemovedId),state.entry_exceptions,  LocalDateTime.now().toString)
+          // Entry exceptions          
+          case (AssetEntryExceptionCreated(newEntryException), state) =>
+             MicroserviceCalState(state.message, state.assets, state.entries, (newEntryException :: state.entry_exceptions), LocalDateTime.now().toString)            
+          case (AssetEntryExceptionDeleted(entryExceptionId), state) => 
+             MicroserviceCalState(state.message, state.assets, state.entries, state.entry_exceptions.filter(a => a.id != entryExceptionId), LocalDateTime.now().toString)            
+
         }
   }
 }
 
-case class MicroserviceCalState(message: String, assets:List[Asset], entries: List[Entry], timestamp: String)
+case class MicroserviceCalState(message: String, 
+                                assets:List[Asset], 
+                                entries: List[Entry], 
+                                entry_exceptions: List[EntryException], 
+                                timestamp: String)
 object MicroserviceCalState {
   implicit val format0: Format[Asset] = Json.format[Asset]
   implicit val format4: Format[Entry] = Json.format[Entry]
+  implicit val format8: Format[EntryException] = Json.format[EntryException]
   implicit val format: Format[MicroserviceCalState] = Json.format
 }
 
@@ -131,6 +166,9 @@ object MicroserviceCalSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[AssetEntryCreated],
     JsonSerializer[AssetEntryUpdated],
     JsonSerializer[AssetEntryDeleted],
+    JsonSerializer[AssetEntryExceptionCreate],
+    JsonSerializer[AssetEntryExceptionDelete],
+    JsonSerializer[AssetEntryExceptions],
     JsonSerializer[AssetCreate],
     JsonSerializer[AssetUpdate],
     JsonSerializer[AssetDelete],

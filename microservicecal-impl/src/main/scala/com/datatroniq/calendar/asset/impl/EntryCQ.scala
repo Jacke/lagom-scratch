@@ -37,11 +37,36 @@ case class AssetEntryDeleted(entryId: Int) extends MicroserviceCalEvent
 object AssetEntryDeleted {
   implicit val format: Format[AssetEntryDeleted] = Json.format
 }
+case class AssetEntryExceptionCreated(entryException: EntryException) extends MicroserviceCalEvent
+object AssetEntryExceptionCreated {
+  implicit val format5: Format[EntryException] = Json.format[EntryException]
+  implicit val format: Format[AssetEntryExceptionCreated] = Json.format
+}
+case class AssetEntryExceptionDeleted(entryId: Int) extends MicroserviceCalEvent
+object AssetEntryExceptionDeleted {
+  implicit val format: Format[AssetEntryExceptionDeleted] = Json.format
+}
+
 
 
 /**
  * Commands
  */
+case class AssetEntryExceptionCreate(entryException: EntryException) extends MicroserviceCalCommand[EntryException]
+object AssetEntryExceptionCreate {
+  implicit val format5: Format[EntryException] = Json.format[EntryException]
+  implicit val format6:Format[AssetEntryExceptionCreate] = Json.format[AssetEntryExceptionCreate]
+}
+
+case class AssetEntryExceptionDelete(entry_exception_id: Int) extends MicroserviceCalCommand[Int]
+object AssetEntryExceptionDelete {
+  implicit val format6:Format[AssetEntryExceptionDelete] = Json.format[AssetEntryExceptionDelete]
+}
+
+case class AssetEntryExceptions(entry_id: Int) extends MicroserviceCalCommand[List[EntryException]]
+object AssetEntryExceptions {
+  implicit val format7:Format[AssetEntryExceptions] = Json.format[AssetEntryExceptions]
+}
 
 case class AssetEntries(entryId: Int) extends MicroserviceCalCommand[List[Entry]]
 object AssetEntries {
