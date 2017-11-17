@@ -55,30 +55,59 @@ trait Tables {
   
   def assetRemove(id: Int): DBIO[Int] = assets.filter(_.id === id).delete
 
-//case class Entry(id:Int, asset_id: Int, from: DateTime, end: DateTime)
+//case class Entry(id: Option[Int] = None, asset_id: Int, name: String, startDateUtc: DateTime, endDateUtc: DateTime, 
+//  duration: Int, isAllDay: Boolean = false, 
+//  isRecuring: Boolean = false, recurrencePattern: String = "")
+
   class Entries(tag: Tag) extends Table[Entry](tag, "entries") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def asset_id = column[Int]("asset_id")
     def name = column[String]("name")
-    def from = column[org.joda.time.DateTime]("from")
-    def end = column[org.joda.time.DateTime]("end")
-
+    def startDateUtc = column[org.joda.time.DateTime]("startDateUtc")
+    def endDateUtc = column[org.joda.time.DateTime]("endDateUtc")
+    def duration = column[Int]("duration")
+    def isAllDay = column[Boolean]("isAllDay")
+    def isRecuring = column[Boolean]("isRecuring")
+    def recurrencePattern = column[String]("recurrencePattern")
     def asset =
       foreignKey("ASSET_FK", asset_id, assets)(
         _.id,
-        onUpdate = ForeignKeyAction.Restrict,
         onDelete = ForeignKeyAction.Cascade)
-    def * = (id.?, asset_id, name, from, end) <> (Entry.tupled, Entry.unapply)
+    def * = (id.?, asset_id, name, startDateUtc, endDateUtc,duration, isAllDay, isRecuring, recurrencePattern) <> (Entry.tupled, Entry.unapply)
   }
   lazy val entries: TableQuery[Entries] = TableQuery[Entries]
 
+//case class EntryException(id: Option[Int] = None, entry_id: Int, startDateUtc: DateTime, endDateUtc: DateTime)
+  class EntryExceptions(tag: Tag) extends Table[EntryException](tag, "entry_exceptions") {
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def entry_id = column[Int]("entry_id")
+    def startDateUtc = column[org.joda.time.DateTime]("startDateUtc")
+    def endDateUtc = column[org.joda.time.DateTime]("endDateUtc")
+
+    def entriesFk =
+      foreignKey("ENTRY_EXECPT_FK", entry_id, entries)(
+        _.id,
+        onDelete = ForeignKeyAction.Cascade)
+    def * = (id.?, entry_id, startDateUtc, endDateUtc) <> (EntryException.tupled, EntryException.unapply)
+  }
+  lazy val entry_exceptions: TableQuery[EntryExceptions] = TableQuery[EntryExceptions]
+
+
   def entryCreate(e: Entry): DBIO[Entry] =
-    (entries returning entries) += Entry(e.id, e.asset_id, e.name, e.from, e.end)
+    (entries returning entries) += e
+
+  def entryExceptionCreate(e: EntryException): DBIO[EntryException] =
+    (entry_exceptions returning entry_exceptions) += e
+  
   
   def getEntry(id: Int): DBIO[Option[Entry]] = entries.filter(_.id === id).result.headOption
+
+  def getEntryException(id: Int): DBIO[Option[EntryException]] = entry_exceptions.filter(_.id === id).result.headOption
   
   def getEntriesByAsset(asset_id: Int): DBIO[Seq[Entry]] = entries.filter(_.asset_id === asset_id).result
-  
+
+  def getEntryExceptionByEntry(entry_id: Int): DBIO[Seq[EntryException]] = entry_exceptions.filter(_.entry_id === entry_id).result
+
   def selectEntries(): DBIO[Seq[Entry]] = entries.result
   
   def selectEntry(id: Int): DBIO[Option[Entry]] = entries.filter(_.id === id).result.headOption
@@ -108,8 +137,10 @@ trait Tables {
 
   def createAllTable: DBIO[_] = MTable.getTables.flatMap { tables =>
       if (!tables.exists(_.name.name == "assets")) {
-        DBIO.seq(assets.schema.create,
-        entries.schema.create)
+        DBIO.seq(
+          assets.schema.create,
+          entries.schema.create,
+          entry_exceptions.schema.create)
       } else {
         DBIO.successful(())
       }

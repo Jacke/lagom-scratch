@@ -16,7 +16,34 @@ object AssetService {
 case class Asset(id: Option[Int] = None, name: String)
 case class Availability(from: DateTime, end: DateTime)
 case class AssetAvailabilityWrapper(assetId: Int, availability: List[Availability])
-case class Entry(id: Option[Int] = None, asset_id: Int, name: String, from: DateTime, end: DateTime)
+/*
+Event
+
+Column Name Type
+EventId Unique id
+name String
+from StartDateUtc  DateTime
+end EndDateUtc  DateTime
+IsAllDay  Boolean
+Duration  Integer
+IsRecurring Boolean
+RecurrencePattern String
+*/
+
+case class Entry(id: Option[Int] = None, asset_id: Int, name: String, startDateUtc: DateTime, endDateUtc: DateTime, 
+  duration: Int, isAllDay: Boolean = false, 
+  isRecuring: Boolean = false, recurrencePattern: String = "")
+
+/*
+EventException
+
+Column Name Type
+EventExceptionId  Unique id
+EventID (FK)  Unique id
+ExceptionDateUtc  DateTime
+*/
+case class EntryException(id: Option[Int] = None, entry_id: Int, startDateUtc: DateTime, endDateUtc: DateTime)
+
 
 trait AssetService extends Service {
   import com.datatroniq.calendar.utils.Formats._
