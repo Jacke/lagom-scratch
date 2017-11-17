@@ -35,7 +35,7 @@ trait Tables {
   lazy val assets: TableQuery[Assets] = TableQuery[Assets]
 
   def assetCreate(a: Asset): DBIO[Asset] = (assets returning assets) += Asset(a.id, a.name)
-  def assetUpdate(id: Int, assetToUpdate: Asset): DBIO[_] = {
+  def assetUpdate(id: Int, assetToUpdate: Asset): DBIO[Asset] = {
     val q: Query[Assets, Asset, Seq] = assets.filter(_.id === id)
     for {
       select <- q.result
@@ -45,11 +45,11 @@ trait Tables {
         case None =>
           assets += Asset(assetToUpdate.id, assetToUpdate.name)
       }
-    } yield updated
+    } yield assetToUpdate
   }
-  def selectAssets() = assets.result
-  def selectAsset(id: Int) = assets.filter(_.id === id).result
-  def assetRemove(id: Int): DBIO[_] = assets.filter(_.id === id).delete
+  def selectAssets(): DBIO[Seq[Asset]] = assets.result
+  def selectAsset(id: Int): DBIO[Option[Asset]] = assets.filter(_.id === id).result.headOption
+  def assetRemove(id: Int): DBIO[Int] = assets.filter(_.id === id).delete
 
 //case class Entry(id:Int, asset_id: Int, from: DateTime, end: DateTime)
   class Entries(tag: Tag) extends Table[Entry](tag, "entries") {
@@ -68,16 +68,16 @@ trait Tables {
   }
   lazy val entries: TableQuery[Entries] = TableQuery[Entries]
 
-  def entryCreate(e: Entry): DBIO[_] =
+  def entryCreate(e: Entry): DBIO[Entry] =
     (entries returning entries) += Entry(e.id, e.asset_id, e.name, e.from, e.end)
-  def getEntry(id: Int) = entries.filter(_.id === id)
-  def getEntriesByAsset(asset_id: Int) = entries.filter(_.asset_id === asset_id)
-  def selectEntries() = entries.result
-  def selectEntry(id: Int) = entries.filter(_.id === id).result
-  def selectEntryByAsset(asset_id: Int) =
+  def getEntry(id: Int): DBIO[Option[Entry]] = entries.filter(_.id === id).result.headOption
+  def getEntriesByAsset(asset_id: Int): DBIO[Seq[Entry]] = entries.filter(_.asset_id === asset_id).result
+  def selectEntries(): DBIO[Seq[Entry]] = entries.result
+  def selectEntry(id: Int): DBIO[Option[Entry]] = entries.filter(_.id === id).result.headOption
+  def selectEntryByAsset(asset_id: Int): DBIO[Seq[Entry]] =
     entries.filter(_.asset_id === asset_id).result
-  def entryRemove(id: Int): DBIO[_] = entries.filter(_.id === id).delete
-  def entryUpdate(id: Int, entryToUpdate: Entry): DBIO[_] = {
+  def entryRemove(id: Int): DBIO[Int] = entries.filter(_.id === id).delete
+  def entryUpdate(id: Int, entryToUpdate: Entry): DBIO[Entry] = {
     val q: Query[Entries, Entry, Seq] = entries.filter(_.id === id)
     for {
       select <- q.result
@@ -91,7 +91,7 @@ trait Tables {
                            entryToUpdate.from,
                            entryToUpdate.end)
       }
-    } yield updated
+    } yield entryToUpdate
   }
   def testStub[T](e: EventStreamElement[T]): DBIO[_] =
     entries.filter(_.id === 1).delete

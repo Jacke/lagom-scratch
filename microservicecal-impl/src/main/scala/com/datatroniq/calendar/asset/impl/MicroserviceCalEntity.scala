@@ -76,14 +76,6 @@ class MicroserviceCalEntity extends PersistentEntity {
               ctx.reply(id)
             }
         }
-        .onReadOnlyCommand[Hello, String] {
-          case (Hello(name), ctx, state) =>
-            ctx.reply(
-              Json
-                .toJson(Map("name" -> Json.toJson(name),
-                            "state" -> Json.toJson(state)))
-                .toString)
-        }
 
         .onReadOnlyCommand[AssetEntries, List[Entry]] {
           case (AssetEntries(assetId), ctx, state) =>

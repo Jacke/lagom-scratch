@@ -9,16 +9,12 @@ import com.lightbend.lagom.scaladsl.persistence.{
   EventStreamElement,
   PersistentEntityRegistry
 }
-
 import org.joda.time.DateTime
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
-// FOR TEST removeme
-import play.api.libs.json.{Format, Json}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import slick.jdbc.JdbcBackend.Database
-
 import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.ReadSide
 import com.lightbend.lagom.scaladsl.persistence.AggregateEventTag
@@ -47,36 +43,36 @@ class MicroserviceCalServiceImpl(
       db,
       profile))
 
-
-
-
-///////
-//          Primary commands
-////
+/**
+ * Primary commands
+ */
 // Query the Read-Side Database
-
   override def getAllAssets() = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    ref.ask(AssetsList()) // List[Asset]]
-    persistToDb(action: DBIO[_])
-    //db.run(repository.selectAssets() )
+    ref.ask(AssetsList()).flatMap { _ =>
+      db.run(repository.selectAssets()).map(_.toList)
+    }
   }
   override def getAsset(assetId: Int) = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    ref.ask(AssetGet(assetId)).map { r =>
-      Json.toJson(r).toString
+    ref.ask(AssetGet(assetId)).flatMap { r =>
+      db.run(repository.selectAsset(assetId)).map { optR => 
+        optR match {
+          case Some(asset) => asset
+          case _ => r
+        }
+      }
     }
-    //db.run( repository.selectAsset(assetId) )
   }
 
   override def getEntries(assetId: Int) = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    ref.ask(AssetEntries(assetId)) // List[Entry]]
-    persistToDb(action: DBIO[_])
-    //db.run (repository.selectEntryByAsset(assetId) )
+    ref.ask(AssetEntries(assetId)).flatMap { _ =>
+      db.run(repository.selectEntryByAsset(assetId)).map(_.toList)
+    }  
   }
 
 
@@ -84,7 +80,6 @@ class MicroserviceCalServiceImpl(
   override def createAsset() = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    //    db.run( repository.assetCreate(Asset(2, "bookstore")) )
       db.run(repository.assetCreate(request)).flatMap { db_result =>
         ref.ask(AssetCreate(db_result)).map { r =>
           r
@@ -95,16 +90,16 @@ class MicroserviceCalServiceImpl(
   override def updateAsset(id: Int) = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    ref.ask(AssetUpdate(id, request)) // Asset]
-    persistToDb(action: DBIO[_])
-    //db.run( repository.assetUpdate(id, Asset(2, "bookstore")) )
+    ref.ask(AssetUpdate(id, request)).flatMap { _ => 
+      db.run(repository.assetUpdate(id, request))
+    }
   }
   override def deleteAsset(id: Int) = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    ref.ask(AssetDelete(id)) // Asset]
-    persistToDb(action: DBIO[_])
-    //db.run( repository.assetRemove(id) )
+    ref.ask(AssetDelete(id)).flatMap { _ => 
+      db.run(repository.assetRemove(id))
+    }
   }
 
 
@@ -112,8 +107,6 @@ class MicroserviceCalServiceImpl(
   override def createAssetEntry(id: Int) = ServiceCall { request =>
     val test: String = "test"
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-    //db.run(
-    //  repository.entryCreate(Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now())))
     db.run(repository.entryCreate(request)).flatMap { db_result =>
         ref.ask(AssetEntryCreate(db_result)).map { r =>
           r
@@ -124,19 +117,17 @@ class MicroserviceCalServiceImpl(
     request =>
       val test: String = "test"
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-      ref.ask(AssetEntryUpdate(request))
-      persistToDb(action: DBIO[_])
-      //db.run(
-      //  repository.entryUpdate(id, Entry(1, 2, "test entry", org.joda.time.DateTime.now(), org.joda.time.DateTime.now())))
-
+      ref.ask(AssetEntryUpdate(request)).flatMap { _ =>
+        db.run(repository.entryUpdate(id, request))
+      }
   }
   override def deleteAssetEntry(assetId: Int, id: Int) = ServiceCall {
     request =>
       val test: String = "test"
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](test)
-      //db.run( repository.entryRemove(id) )
-      ref.ask(AssetEntryDelete(id))
-      persistToDb(action: DBIO[_])
+      ref.ask(AssetEntryDelete(id)).flatMap { _ =>
+        db.run(repository.entryRemove(id))
+      }
 
   }
 
@@ -152,9 +143,10 @@ class MicroserviceCalServiceImpl(
 
 
 
-  private def persistToDb(action: DBIO[_]) = {
-    if (true) {
+  private def persistToDb[T](action: DBIO[T]):Future[T] = {
+//    if (true) { // Individual persistents switch
       db.run(action)
-    }
+//    } else {
+//    }
   }
 }

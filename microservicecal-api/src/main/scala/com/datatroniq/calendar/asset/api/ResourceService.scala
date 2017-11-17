@@ -24,7 +24,7 @@ trait AssetService extends Service {
 
 // 1.1 The employee manages the calendar for his book store
   def getAllAssets(): ServiceCall[NotUsed, List[Asset]]
-  def getAsset(assetId: Int): ServiceCall[NotUsed, String]
+  def getAsset(assetId: Int): ServiceCall[NotUsed, Asset]
   def createAsset(): ServiceCall[Asset, Asset]
   def updateAsset(id: Int): ServiceCall[Asset, Asset]
   def deleteAsset(id: Int): ServiceCall[NotUsed, Int]
@@ -38,9 +38,7 @@ trait AssetService extends Service {
   def assetAvailability(
       assetId: Int): ServiceCall[NotUsed, AssetAvailabilityWrapper]
 
-  def useGreeting(id: String): ServiceCall[AssetMessage, Done]
-  def greetingsTopic(): Topic[AssetMessageChanged]
-
+  
   override final def descriptor = {
     import Service._
     // @formatter:off
