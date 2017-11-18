@@ -69,7 +69,9 @@ class MicroserviceCalServiceImpl(
 //  Update the Read-Side
   override def createAsset() = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
-    ref.ask(AssetCreate(request)).flatMap { action => db.run(repository.assetCreate(request)) }
+    db.run(repository.assetCreate(request)).flatMap { db_result =>
+      ref.ask(AssetCreate(db_result))
+    }
   }
 
   override def updateAsset(id: Int) = ServiceCall { request =>
@@ -87,7 +89,7 @@ class MicroserviceCalServiceImpl(
 
   override def getEntryExceptionsByEntry(entry_id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
-    ref.ask(AssetEntryExceptions(entry_id)).flatMap { _ =>
+    ref.ask(GetAssetEntryExceptions(entry_id)).flatMap { _ =>
       db.run(repository.getEntryExceptionsByEntry(entry_id)).map(_.toList)
     }  
   }
@@ -119,23 +121,21 @@ class MicroserviceCalServiceImpl(
 
   override def createAssetEntry(id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
-    db.run(repository.entryCreate(request)).flatMap { db_result =>
+    db.run(repository.entryCreate(request.durate() )).flatMap { db_result =>
         ref.ask(AssetEntryCreate(db_result)).map { r =>
           r
       }
     }
   }
 
-  override def updateAssetEntry(asset_id: Int, id: Int) = ServiceCall {
-    request =>
+  override def updateAssetEntry(id: Int) = ServiceCall { request =>
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
-      ref.ask(AssetEntryUpdate(request)).flatMap { _ =>
+      ref.ask(AssetEntryUpdate(request.durate() )).flatMap { _ =>
         db.run(repository.entryUpdate(id, request))
       }
   }
 
-  override def deleteAssetEntry(asset_id: Int, id: Int) = ServiceCall {
-    request =>
+  override def deleteAssetEntry(id: Int) = ServiceCall { request =>
       val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
       ref.ask(AssetEntryDelete(id)).flatMap { _ =>
         db.run(repository.entryRemove(id))
@@ -150,12 +150,4 @@ class MicroserviceCalServiceImpl(
         Availability(org.joda.time.DateTime.now(), org.joda.time.DateTime.now()))))
   }
 
-
-
-  private def persistToDb[T](action: DBIO[T]):Future[T] = {
-//    if (true) { // Individual persistents switch
-      db.run(action)
-//    } else {
-//    }
-  }
 }

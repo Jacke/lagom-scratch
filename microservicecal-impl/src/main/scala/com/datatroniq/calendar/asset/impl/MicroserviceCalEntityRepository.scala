@@ -117,9 +117,11 @@ trait Tables {
     } yield entryExceptionToUpdate
   }
 
-  def removeEntryException(id: Int): DBIO[Int] = entry_exceptions.filter(_.id === id).delete
+  def removeEntryException(id: Int): DBIO[Int] = 
+    entry_exceptions.filter(_.id === id).delete
 
-  def getEntryExceptionsByEntry(entry_id: Int): DBIO[Seq[EntryException]] = entry_exceptions.filter(_.entry_id === entry_id).result
+  def getEntryExceptionsByEntry(entry_id: Int): DBIO[Seq[EntryException]] = 
+    entry_exceptions.filter(_.entry_id === entry_id).result
   
 /*******
  *  Entries

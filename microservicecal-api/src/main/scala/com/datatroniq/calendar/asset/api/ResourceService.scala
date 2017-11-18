@@ -12,6 +12,7 @@ import play.api.libs.json.JodaReads._
 import play.api.libs.json.JodaWrites._
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import org.joda.time.DateTime
+import org.joda.time.Minutes
 object AssetService {
   val TOPIC_NAME = "Assets"
 }
@@ -33,8 +34,13 @@ RecurrencePattern String
 */
 
 case class Entry(id: Option[Int] = None, asset_id: Int, name: String, startDateUtc: DateTime, endDateUtc: DateTime, 
-  duration: Int, isAllDay: Boolean = false, 
-  isRecuring: Boolean = false, recurrencePattern: String = "")
+  var duration: Int = 0, isAllDay: Boolean = false, 
+  isRecuring: Boolean = false, recurrencePattern: String = "") {
+  def durate() = { 
+    duration = Minutes.minutesBetween(startDateUtc, endDateUtc).getMinutes()
+    this
+  }
+}
 
 /*
 EventException
@@ -58,8 +64,8 @@ trait AssetService extends Service {
 
   def getEntries(assetId: Int): ServiceCall[NotUsed, List[Entry]]
   def createAssetEntry(id: Int): ServiceCall[Entry, Entry]
-  def updateAssetEntry(assetId: Int, id: Int): ServiceCall[Entry, Entry]
-  def deleteAssetEntry(assetId: Int, id: Int): ServiceCall[NotUsed, Int]
+  def updateAssetEntry(id: Int): ServiceCall[Entry, Entry]
+  def deleteAssetEntry(id: Int): ServiceCall[NotUsed, Int]
 
   def entryExceptionCreate(): ServiceCall[EntryException, EntryException]
   def entryExceptionUpdate(id: Int): ServiceCall[EntryException, EntryException]
@@ -85,13 +91,13 @@ trait AssetService extends Service {
         restCall(Method.PUT, "/api/asset/:id", updateAsset _),
         restCall(Method.DELETE, "/api/asset/:id", deleteAsset _),
         restCall(Method.POST, "/api/asset/:id/entry", createAssetEntry _),
-        restCall(Method.PUT, "/api/asset/:assetId/entry/:id", updateAssetEntry _),
+        restCall(Method.PUT, "/api/asset/entry/:id", updateAssetEntry _),
+        restCall(Method.DELETE, "/api/asset/entry/:id", deleteAssetEntry _),
 
         restCall(Method.GET, "/api/entry/:entry_id/exception", getEntryExceptionsByEntry _),
         restCall(Method.POST, "/api/entry/exception", entryExceptionCreate _),        
         restCall(Method.DELETE, "/api/entry/:entry_id/exception", deleteEntryException _),
 
-        restCall(Method.DELETE, "/api/asset/:assetId/entry/:id", deleteAssetEntry _),
         restCall(Method.GET, "/api/asset/:id/availabilities", assetAvailability _)
       )
       .withAutoAcl(true)
