@@ -47,7 +47,7 @@ trait EntriesCalls extends MicroserviceCalService {
   override def createAssetEntry(id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](
       AssetService.TOPIC_NAME)
-    db.run(repository.entryCreate(request.durate())).flatMap { db_result =>
+    db.run(repository.entryCreate(request)).flatMap { db_result =>
       ref.ask(AssetEntryCreate(db_result)).map { r =>
         r
       }
@@ -57,7 +57,7 @@ trait EntriesCalls extends MicroserviceCalService {
   override def updateAssetEntry(id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](
       AssetService.TOPIC_NAME)
-    ref.ask(AssetEntryUpdate(request.durate())).flatMap { _ =>
+    ref.ask(AssetEntryUpdate(request)).flatMap { _ =>
       db.run(repository.entryUpdate(id, request))
     }
   }

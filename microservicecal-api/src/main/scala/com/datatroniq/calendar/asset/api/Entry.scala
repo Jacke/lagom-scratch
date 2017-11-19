@@ -7,6 +7,46 @@ import com.lightbend.lagom.scaladsl.api.transport.Method
 import org.joda.time.DateTime
 import org.joda.time.Minutes
 
+object EntryFactory {
+  def apply(id: Option[Int] = None,
+                 asset_id: Int,
+                 name: String,
+                 startDateUtc: DateTime,
+                 endDateUtc: DateTime,
+                 duration: Int = 0,
+                 isAllDay: Boolean = false,
+                 isRecuring: Boolean = false,
+                 recurrencePattern: String = "") = {
+/* TODO: Check if reccurencePattern validated by the same entry day 
+    Entry on monday, reccurence pattern from monday
+    Entry on wed then pattern should be from wed
+    
+    if (isRecuring) {
+      // Validate recurrencePattern pattern
+      val pattern = recurrencePattern.split("-")
+      val currentDay = startDateUtc.dayOfWeek().getAsShortText().toUpperCase()
+      val start = pattern(0)
+      val end = pattern(1)
+      if (!(start == )) {
+
+      }
+    }
+*/
+    val duration = Minutes.minutesBetween(startDateUtc, endDateUtc).getMinutes()
+
+    new Entry(id,
+              asset_id,
+              name,
+              startDateUtc,
+              endDateUtc,
+              duration,
+              isAllDay,
+              isRecuring,
+              recurrencePattern)
+
+  }
+}
+
 case class Entry(id: Option[Int] = None,
                  asset_id: Int,
                  name: String,
@@ -16,10 +56,6 @@ case class Entry(id: Option[Int] = None,
                  isAllDay: Boolean = false,
                  isRecuring: Boolean = false,
                  recurrencePattern: String = "") {
-  def durate() = {
-    duration = Minutes.minutesBetween(startDateUtc, endDateUtc).getMinutes()
-    this
-  }
   def recur(): List[Entry] = {
     if (isRecuring) {
       // contains word
@@ -29,18 +65,8 @@ case class Entry(id: Option[Int] = None,
       val start = pattern(0)
       val end = pattern(1)
       val days = List("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
-      println(s"currentDay: ${days.indexOf(currentDay)}")
-      println(s"start ${days.indexOf(start)}")
-      println(s"end ${days.indexOf(end)}")
-      println(days.indexOf(currentDay))
-      println(days.drop(days.indexOf(currentDay)))
-      println(days.drop(days.indexOf(currentDay)).splitAt(days.indexOf(end))._1)
-      println
-
-      val targetDays = days.drop(days.indexOf(currentDay)).splitAt(days.indexOf(end))._1
-      println("targetDays")
-      println(targetDays)
-
+      val skippedDays = days.drop(days.indexOf(end)+1)
+      val targetDays = days.drop(days.indexOf(currentDay))filter(d => !skippedDays.contains(d) )
       targetDays.map { day =>
         Entry(id,
               asset_id,
