@@ -29,15 +29,17 @@ case class Entry(id: Option[Int] = None,
       val start = pattern(0)
       val end = pattern(1)
       val days = List("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
+      val skippedDays = days.drop(days.indexOf(end)+1)
       println(s"currentDay: ${days.indexOf(currentDay)}")
       println(s"start ${days.indexOf(start)}")
       println(s"end ${days.indexOf(end)}")
+      println(s"skippedDays: ${skippedDays}")
       println(days.indexOf(currentDay))
       println(days.drop(days.indexOf(currentDay)))
-      println(days.drop(days.indexOf(currentDay)).splitAt(days.indexOf(end))._1)
+      println(days.drop(days.indexOf(currentDay)).filter(d => !skippedDays.contains(d) ))
       println
 
-      val targetDays = days.drop(days.indexOf(currentDay)).splitAt(days.indexOf(end))._1
+      val targetDays = days.drop(days.indexOf(currentDay))filter(d => !skippedDays.contains(d) )
       println("targetDays")
       println(targetDays)
 
