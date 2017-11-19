@@ -19,7 +19,7 @@ object AvailabilitySplitter {
     entries.map(e => e.recur()).flatten
 
   def testRecur() = {
-    recurenceParsing(
+    val test1 = recurenceParsing(
       List(
         Entry(None,
               0,
@@ -27,8 +27,37 @@ object AvailabilitySplitter {
               DateTime.parse("11/18/2017 08:10:00", pattern),
               DateTime.parse("11/18/2017 17:10:00", pattern),
               isRecuring = true,
-              recurrencePattern = "MON-THU"))
+              recurrencePattern = "MON-TUE"))
     )
+
+    val test2 = recurenceParsing(
+      List(
+        Entry(None,
+              0,
+              "name",
+              DateTime.parse("11/20/2017 08:10:00", pattern),
+              DateTime.parse("11/20/2017 17:10:00", pattern),
+              isRecuring = true,
+              recurrencePattern = "MON-WED"))
+    )
+
+
+    val test3 = recurenceParsing(
+      List(
+        Entry(None,
+              0,
+              "name",
+              DateTime.parse("11/21/2017 08:10:00", pattern),
+              DateTime.parse("11/21/2017 17:10:00", pattern),
+              isRecuring = true,
+              recurrencePattern = "MON-WED"))
+    )
+    println("test1")
+    println(test1)
+    println("test2")
+    println(test2)
+    println("test3")
+    println(test3)
   }
 
   def split(entries: List[Entry],

@@ -25,16 +25,28 @@ case class Entry(id: Option[Int] = None,
       // contains word
       // MON-FRI
       val pattern = recurrencePattern.split("-")
+      val currentDay = startDateUtc.dayOfWeek().getAsShortText().toUpperCase()
       val start = pattern(0)
       val end = pattern(1)
       val days = List("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
-      val targetDays = days.drop(days.indexOf(start)).take(days.indexOf(end))
+      println(s"currentDay: ${days.indexOf(currentDay)}")
+      println(s"start ${days.indexOf(start)}")
+      println(s"end ${days.indexOf(end)}")
+      println(days.indexOf(currentDay))
+      println(days.drop(days.indexOf(currentDay)))
+      println(days.drop(days.indexOf(currentDay)).splitAt(days.indexOf(end))._1)
+      println
+
+      val targetDays = days.drop(days.indexOf(currentDay)).splitAt(days.indexOf(end))._1
+      println("targetDays")
+      println(targetDays)
+
       targetDays.map { day =>
         Entry(id,
               asset_id,
               name,
-              startDateUtc.plusDays(days.indexOf(day) + 1),
-              endDateUtc.plusDays(days.indexOf(day) + 1))
+              startDateUtc.plusDays(days.indexOf(day)),
+              endDateUtc.plusDays(days.indexOf(day)))
       }
     } else { List(this) }
   }
