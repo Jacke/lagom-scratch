@@ -16,22 +16,10 @@ import org.joda.time.Minutes
 object AssetService {
   val TOPIC_NAME = "Assets"
 }
+
 case class Asset(id: Option[Int] = None, name: String)
 case class Availability(from: DateTime, end: DateTime)
 case class AssetAvailabilityWrapper(assetId: Int, availability: List[Availability])
-/*
-Event
-
-Column Name Type
-EventId Unique id
-name String
-from StartDateUtc  DateTime
-end EndDateUtc  DateTime
-IsAllDay  Boolean
-Duration  Integer
-IsRecurring Boolean
-RecurrencePattern String
-*/
 
 case class Entry(id: Option[Int] = None, asset_id: Int, name: String, startDateUtc: DateTime, endDateUtc: DateTime, 
   var duration: Int = 0, isAllDay: Boolean = false, 

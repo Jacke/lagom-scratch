@@ -21,12 +21,12 @@ object AvailabilitySplitter {
 
 	def testRecur() = {
 		recurenceParsing(
-
 			List(Entry(None, 0, "name", DateTime.parse("11/18/2017 08:10:00",pattern), 
 										DateTime.parse("11/18/2017 17:10:00",pattern),isRecuring = true,
 					recurrencePattern = "MON-THU" ))
 		)
 	}
+	
 	def split(entries: List[Entry], exceptions: List[EntryException]):List[Availability] = {
 		entries.map { entry =>
 		    val interval = new org.joda.time.Interval(entry.startDateUtc, entry.endDateUtc)
