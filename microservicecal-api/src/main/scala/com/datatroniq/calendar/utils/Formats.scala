@@ -6,7 +6,6 @@ import play.api.libs.json.JodaReads._
 import play.api.libs.json.JodaWrites._
 
 object Formats {
-
   implicit val format: Format[Asset] = Json.format[Asset]
   implicit val format2: Format[Availability] = Json.format[Availability]
   implicit val format3: Format[AssetAvailabilityWrapper] =

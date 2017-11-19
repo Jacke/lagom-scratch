@@ -17,14 +17,6 @@ object AssetService {
   val TOPIC_NAME = "Assets"
 }
 
-/*
-EventException
-
-Column Name Type
-EventExceptionId  Unique id
-EventID (FK)  Unique id
-ExceptionDateUtc  DateTime
- */
 case class EntryException(id: Option[Int] = None,
                           entry_id: Int,
                           startDateUtc: DateTime,
@@ -32,7 +24,7 @@ case class EntryException(id: Option[Int] = None,
 
 trait MicroserviceCalService extends Service {
   import com.datatroniq.calendar.utils.Formats._
-// 1.1 The employee manages the calendar for his book store
+
   def getAllAssets(): ServiceCall[NotUsed, List[Asset]]
   def getAsset(assetId: Int): ServiceCall[NotUsed, Asset]
   def createAsset(): ServiceCall[Asset, Asset]
@@ -52,9 +44,10 @@ trait MicroserviceCalService extends Service {
 
   implicit val format5: Format[EntryException] = Json.format[EntryException]
 
-// 1.2 The company wants to know when the store was open
   def assetAvailability(
       assetId: Int): ServiceCall[NotUsed, AssetAvailabilityWrapper]
+  def allAvailabilities(): ServiceCall[NotUsed, List[AssetAvailabilityWrapper]]
+
 
   override final def descriptor = {
     import Service._
@@ -75,7 +68,9 @@ trait MicroserviceCalService extends Service {
         restCall(Method.POST, "/api/entry/exception", entryExceptionCreate _),        
         restCall(Method.DELETE, "/api/entry/:entry_id/exception", deleteEntryException _),
 
-        restCall(Method.GET, "/api/asset/:id/availabilities", assetAvailability _)
+        restCall(Method.GET, "/api/asset/:id/availabilities", assetAvailability _),
+        restCall(Method.GET, "/api/availabilities", allAvailabilities _)
+
       )
       .withAutoAcl(true)
     // @formatter:on

@@ -32,7 +32,7 @@ class MicroserviceCalEntity extends PersistentEntity {
   override def behavior: Behavior = {
     case MicroserviceCalState(message, assets, entries, entry_exceptions, _) =>
       Actions()
-        .onCommand[AssetCreate, Asset] {
+        .onCommand[AssetCreate, Asset] { // PartialFunction[(Command, CommandContext[Reply], State), Persist]
           case (AssetCreate(asset), ctx, state) => {
             println(asset)
             ctx.thenPersist(

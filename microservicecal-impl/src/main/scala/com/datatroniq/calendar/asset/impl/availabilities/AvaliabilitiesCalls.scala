@@ -36,7 +36,7 @@ trait AvaliabilitiesCalls extends MicroserviceCalService {
   val profile: JdbcProfile
   val repository: MicroserviceCalEntityRepository
 
-  override def assetAvailability(asset_id: Int) = ServiceCall { request =>
+  override def assetAvailability(assetId: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](
       AssetService.TOPIC_NAME)
     Future(
@@ -47,6 +47,20 @@ trait AvaliabilitiesCalls extends MicroserviceCalService {
              Availability(org.joda.time.DateTime.now(),
                           org.joda.time.DateTime.now()))
       ))
+  }
+
+  override def allAvailabilities() = ServiceCall { request =>
+    val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](
+      AssetService.TOPIC_NAME)
+
+    Future(
+      List(AssetAvailabilityWrapper(
+        1,
+        List(Availability(org.joda.time.DateTime.now(),
+                          org.joda.time.DateTime.now()),
+             Availability(org.joda.time.DateTime.now(),
+                          org.joda.time.DateTime.now())
+      ))))
   }
 
 }
