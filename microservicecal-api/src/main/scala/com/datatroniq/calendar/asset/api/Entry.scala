@@ -16,34 +16,45 @@ object EntryFactory {
                  duration: Int = 0,
                  isAllDay: Boolean = false,
                  isRecuring: Boolean = false,
-                 recurrencePattern: String = "") = {
-/* TODO: Check if reccurencePattern validated by the same entry day 
-    Entry on monday, reccurence pattern from monday
-    Entry on wed then pattern should be from wed
-    
-    if (isRecuring) {
-      // Validate recurrencePattern pattern
-      val pattern = recurrencePattern.split("-")
-      val currentDay = startDateUtc.dayOfWeek().getAsShortText().toUpperCase()
-      val start = pattern(0)
-      val end = pattern(1)
-      if (!(start == )) {
-
-      }
-    }
+                 recurrencePattern: String = ""):Entry = {
+/* 
+      TODO: Check if reccurencePattern validated by the same entry day 
+        Entry on monday, reccurence pattern from monday
+        Entry on wed then pattern should be from wed
+        
+        if (isRecuring) {
+          // Validate recurrencePattern pattern
+          val pattern = recurrencePattern.split("-")
+          val currentDay = startDateUtc.dayOfWeek().getAsShortText().toUpperCase()
+          val start = pattern(0)
+          val end = pattern(1)
+          if (!(start == )) {
+          }
+        }
 */
-    val duration = Minutes.minutesBetween(startDateUtc, endDateUtc).getMinutes()
-
+    val newDuration = Minutes.minutesBetween(startDateUtc, endDateUtc).getMinutes()
     new Entry(id,
               asset_id,
               name,
               startDateUtc,
               endDateUtc,
-              duration,
+              newDuration,
               isAllDay,
               isRecuring,
               recurrencePattern)
+  }
 
+  def apply(entry: Entry):Entry = {
+    val newDuration = Minutes.minutesBetween(entry.startDateUtc, entry.endDateUtc).getMinutes()
+    new Entry(entry.id,
+              entry.asset_id,
+              entry.name,
+              entry.startDateUtc,
+              entry.endDateUtc,
+              newDuration,
+              entry.isAllDay,
+              entry.isRecuring,
+              entry.recurrencePattern)
   }
 }
 
@@ -66,14 +77,15 @@ case class Entry(id: Option[Int] = None,
       val end = pattern(1)
       val days = List("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
       val skippedDays = days.drop(days.indexOf(end)+1)
+
       val targetDays = days.drop(days.indexOf(currentDay))filter(d => !skippedDays.contains(d) )
       targetDays.map { day =>
-        Entry(id,
+        EntryFactory(Entry(id,
               asset_id,
               name,
               startDateUtc.plusDays(days.indexOf(day)),
-              endDateUtc.plusDays(days.indexOf(day)))
+              endDateUtc.plusDays(days.indexOf(day))) )
       }
-    } else { List(this) }
+    } else { List(EntryFactory(this)) }
   }
 }
