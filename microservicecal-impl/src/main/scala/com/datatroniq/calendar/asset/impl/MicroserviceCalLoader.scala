@@ -7,7 +7,7 @@ import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcPersistenceComponents
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import play.api.libs.ws.ahc.AhcWSComponents
-import com.datatroniq.calendar.asset.api.AssetService
+import com.datatroniq.calendar.asset.api.MicroserviceCalService
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.softwaremill.macwire._
 import com.lightbend.lagom.scaladsl.persistence.slick._
@@ -23,7 +23,7 @@ class MicroserviceCalLoader extends LagomApplicationLoader {
   override def loadDevMode(context: LagomApplicationContext): LagomApplication =
     new MicroserviceCalApplication(context) with LagomDevModeComponents
 
-  override def describeService = Some(readDescriptor[AssetService])
+  override def describeService = Some(readDescriptor[MicroserviceCalService])
 }
 
 abstract class MicroserviceCalApplication(context: LagomApplicationContext)
@@ -34,7 +34,7 @@ abstract class MicroserviceCalApplication(context: LagomApplicationContext)
     with AhcWSComponents {
   // Bind the service that this server provides
   override lazy val lagomServer =
-    serverFor[AssetService](wire[MicroserviceCalServiceImpl])
+    serverFor[MicroserviceCalService](wire[MicroserviceCalServiceImpl])
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = MicroserviceCalSerializerRegistry
   // Register the hello-lagom persistent entity

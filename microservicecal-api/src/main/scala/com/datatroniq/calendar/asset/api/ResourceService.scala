@@ -17,33 +17,6 @@ object AssetService {
   val TOPIC_NAME = "Assets"
 }
 
-case class Asset(id: Option[Int] = None, name: String)
-case class Availability(from: DateTime, end: DateTime)
-case class AssetAvailabilityWrapper(assetId: Int, availability: List[Availability])
-
-case class Entry(id: Option[Int] = None, asset_id: Int, name: String, startDateUtc: DateTime, endDateUtc: DateTime, 
-  var duration: Int = 0, isAllDay: Boolean = false, 
-  isRecuring: Boolean = false, recurrencePattern: String = "") {
-  def durate() = { 
-    duration = Minutes.minutesBetween(startDateUtc, endDateUtc).getMinutes()
-    this
-  }
-  def recur():List[Entry] = {
-    if (isRecuring) {
-      // contains word 
-      // MON-FRI
-      val pattern = recurrencePattern.split("-")
-      val start = pattern(0)
-      val end = pattern(1)
-      val days = List("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
-      val targetDays = days.drop(days.indexOf(start)).take(days.indexOf(end))
-      targetDays.map { day =>
-        Entry(id, asset_id, name, startDateUtc.plusDays(days.indexOf(day)+1), endDateUtc.plusDays(days.indexOf(day)+1))        
-      }
-    } else { List(this) }
-  }
-}
-
 /*
 EventException
 
@@ -51,11 +24,13 @@ Column Name Type
 EventExceptionId  Unique id
 EventID (FK)  Unique id
 ExceptionDateUtc  DateTime
-*/
-case class EntryException(id: Option[Int] = None, entry_id: Int, startDateUtc: DateTime, endDateUtc: DateTime)
+ */
+case class EntryException(id: Option[Int] = None,
+                          entry_id: Int,
+                          startDateUtc: DateTime,
+                          endDateUtc: DateTime)
 
-
-trait AssetService extends Service {
+trait MicroserviceCalService extends Service {
   import com.datatroniq.calendar.utils.Formats._
 // 1.1 The employee manages the calendar for his book store
   def getAllAssets(): ServiceCall[NotUsed, List[Asset]]
@@ -71,16 +46,16 @@ trait AssetService extends Service {
 
   def entryExceptionCreate(): ServiceCall[EntryException, EntryException]
   def entryExceptionUpdate(id: Int): ServiceCall[EntryException, EntryException]
-  def getEntryExceptionsByEntry(entry_id: Int): ServiceCall[NotUsed, List[EntryException]]
+  def getEntryExceptionsByEntry(
+      entry_id: Int): ServiceCall[NotUsed, List[EntryException]]
   def deleteEntryException(entry_id: Int): ServiceCall[EntryException, Int]
 
   implicit val format5: Format[EntryException] = Json.format[EntryException]
 
-
 // 1.2 The company wants to know when the store was open
-  def assetAvailability(assetId: Int): ServiceCall[NotUsed, AssetAvailabilityWrapper]
+  def assetAvailability(
+      assetId: Int): ServiceCall[NotUsed, AssetAvailabilityWrapper]
 
-  
   override final def descriptor = {
     import Service._
     // @formatter:off
@@ -106,4 +81,3 @@ trait AssetService extends Service {
     // @formatter:on
   }
 }
-

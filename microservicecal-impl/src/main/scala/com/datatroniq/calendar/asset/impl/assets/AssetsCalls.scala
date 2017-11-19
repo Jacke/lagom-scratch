@@ -2,6 +2,7 @@ package com.datatroniq.calendar.asset.impl
 
 import com.datatroniq.calendar.asset.api
 import com.datatroniq.calendar.asset.api._
+import com.datatroniq.calendar.asset.impl.repository._
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
@@ -28,57 +29,52 @@ import com.lightbend.lagom.scaladsl.persistence.slick.SlickReadSide
 import _root_.slick.driver.JdbcProfile
 import com.datatroniq.calendar.utils.Formats._
 
+trait AssetsCalls extends MicroserviceCalService {
+  val persistentEntityRegistry: PersistentEntityRegistry
+  val readSide: ReadSide
+  val db: Database
+  val profile: JdbcProfile
+  val repository: MicroserviceCalEntityRepository
 
-trait AssetsCalls {
-    val persistentEntityRegistry: PersistentEntityRegistry
-	val readSide: ReadSide
-    val db: Database
-    val profile: JdbcProfile
-    val repository: MicroserviceCalEntityRepository
-
-
-  def AssetsCallsgetAllAssets() = ServiceCall { request =>
+  override def getAllAssets() = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     ref.ask(AssetsList()).flatMap { _ =>
       db.run(repository.selectAssets()).map(_.toList)
     }
   }
-
-
-
-  def AssetsCallsgetAsset(asset_id: Int) = ServiceCall { request =>
+  override def getAsset(asset_id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     ref.ask(AssetGet(asset_id)).flatMap { r =>
-      db.run(repository.selectAsset(asset_id)).map { optR => 
+      db.run(repository.selectAsset(asset_id)).map { optR =>
         optR match {
           case Some(asset) => asset
-          case _ => r
+          case _           => r
         }
       }
     }
   }
 
-
 //  Update the Read-Side
-  def AssetsCallscreateAsset() = ServiceCall { request =>
+  override def createAsset() = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     db.run(repository.assetCreate(request)).flatMap { db_result =>
       ref.ask(AssetCreate(db_result))
     }
   }
 
-  def AssetsCallsupdateAsset(id: Int) = ServiceCall { request =>
+  override def updateAsset(id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
-    ref.ask(AssetUpdate(id, request)).flatMap { action => db.run(repository.assetUpdate(id, request)) } 
+    ref.ask(AssetUpdate(id, request)).flatMap { action =>
+      db.run(repository.assetUpdate(id, request))
+    }
   }
-  
-  def AssetsCallsdeleteAsset(id: Int) = ServiceCall { request =>
+  override def deleteAsset(id: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity]("test")
     ref.ask(AssetDelete(id))
-    ref.ask(AssetDelete(id)).flatMap { action => db.run(repository.assetRemove(id)) } 
+    ref.ask(AssetDelete(id)).flatMap { action =>
+      db.run(repository.assetRemove(id))
+    }
 
   }
-
-
 
 }
