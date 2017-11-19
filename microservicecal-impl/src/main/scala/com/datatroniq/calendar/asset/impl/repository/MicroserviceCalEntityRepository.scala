@@ -16,7 +16,6 @@ import _root_.slick.driver.JdbcProfile
 import _root_.slick.driver.PostgresDriver.api._
 import _root_.slick.model._
 import _root_.slick.jdbc.meta.MTable
-
 import com.github.tototoshi.slick.PostgresJodaSupport._
 import com.lightbend.lagom.scaladsl.persistence.slick._
 import org.joda.time.DateTime
@@ -25,39 +24,13 @@ trait Tables {
   val profile: JdbcProfile
   import profile.api._
   implicit val ec: ExecutionContext
+
   class Assets(tag: Tag) extends Table[Asset](tag, "assets") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
     def * = (id.?, name) <> (Asset.tupled, Asset.unapply)
   }
   lazy val assets: TableQuery[Assets] = TableQuery[Assets]
-
-  def assetCreate(a: Asset): DBIO[Asset] =
-    (assets returning assets) += Asset(a.id, a.name)
-
-  def assetUpdate(id: Int, assetToUpdate: Asset): DBIO[Asset] = {
-    val q: Query[Assets, Asset, Seq] = assets.filter(_.id === id)
-    for {
-      select <- q.result
-      updated <- select.headOption match {
-        case Some(asset) =>
-          q.update(assetToUpdate.copy(id = Some(id)))
-        case None =>
-          assets += Asset(assetToUpdate.id, assetToUpdate.name)
-      }
-    } yield assetToUpdate
-  }
-
-  def assetRemove(id: Int): DBIO[Int] = assets.filter(_.id === id).delete
-
-  def selectAssets(): DBIO[Seq[Asset]] = assets.result
-
-  def selectAsset(id: Int): DBIO[Option[Asset]] =
-    assets.filter(_.id === id).result.headOption
-
-//case class Entry(id: Option[Int] = None, asset_id: Int, name: String, startDateUtc: DateTime, endDateUtc: DateTime,
-//  duration: Int, isAllDay: Boolean = false,
-//  isRecuring: Boolean = false, recurrencePattern: String = "")
 
   class Entries(tag: Tag) extends Table[Entry](tag, "entries") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
@@ -104,71 +77,6 @@ trait Tables {
   lazy val entry_exceptions: TableQuery[EntryExceptions] =
     TableQuery[EntryExceptions]
 
-  /*******
-    *  Entry exceptions
- **/
-  def getEntryException(id: Int): DBIO[Option[EntryException]] =
-    entry_exceptions.filter(_.id === id).result.headOption
-
-  def entryExceptionCreate(e: EntryException): DBIO[EntryException] =
-    (entry_exceptions returning entry_exceptions) += e
-
-  def entryExceptionUpdate(
-      id: Int,
-      entryExceptionToUpdate: EntryException): DBIO[EntryException] = {
-    val q: Query[EntryExceptions, EntryException, Seq] =
-      entry_exceptions.filter(_.id === id)
-    for {
-      select <- q.result
-      updated <- select.headOption match {
-        case Some(entryException) =>
-          q.update(entryException.copy(id = Some(id)))
-        case None =>
-          entry_exceptions += entryExceptionToUpdate.copy(id = None)
-      }
-    } yield entryExceptionToUpdate
-  }
-
-  def removeEntryException(id: Int): DBIO[Int] =
-    entry_exceptions.filter(_.id === id).delete
-
-  def getEntryExceptionsByEntry(entry_id: Int): DBIO[Seq[EntryException]] =
-    entry_exceptions.filter(_.entry_id === entry_id).result
-
-  /*******
-    *  Entries
- *****/
-  def getEntry(id: Int): DBIO[Option[Entry]] =
-    entries.filter(_.id === id).result.headOption
-
-  def getEntriesByAsset(asset_id: Int): DBIO[Seq[Entry]] =
-    entries.filter(_.asset_id === asset_id).result
-
-  def selectEntries(): DBIO[Seq[Entry]] = entries.result
-
-  def selectEntry(id: Int): DBIO[Option[Entry]] =
-    entries.filter(_.id === id).result.headOption
-
-  def selectEntryByAsset(asset_id: Int): DBIO[Seq[Entry]] =
-    entries.filter(_.asset_id === asset_id).result
-
-  def entryCreate(e: Entry): DBIO[Entry] =
-    (entries returning entries) += e
-
-  def entryUpdate(id: Int, entryToUpdate: Entry): DBIO[Entry] = {
-    val q: Query[Entries, Entry, Seq] = entries.filter(_.id === id)
-    for {
-      select <- q.result
-      updated <- select.headOption match {
-        case Some(entry) =>
-          q.update(entryToUpdate.copy(id = Some(id)))
-        case None =>
-          entries += entryToUpdate.copy(id = None)
-      }
-    } yield entryToUpdate
-  }
-  def entryRemove(id: Int): DBIO[Int] = entries.filter(_.id === id).delete
-
   def createAllTable: DBIO[_] =
     MTable.getTables.flatMap { tables =>
       if (!tables.exists(_.name.name == "assets")) {
@@ -179,7 +87,7 @@ trait Tables {
         DBIO.successful(())
       }
     }.transactionally
-
+    
 }
 
 object MicroserviceCalEntityRepository {
@@ -211,6 +119,102 @@ class MicroserviceCalEntityRepository(db: Database, val profile: JdbcProfile)(
     implicit val ec: ExecutionContext)
     extends Tables {
   import profile.api._
+
+
+
+
+
+
+
+
+  def assetCreate(a: Asset): DBIO[Asset] =
+    (assets returning assets) += Asset(a.id, a.name)
+
+  def assetUpdate(id: Int, assetToUpdate: Asset): DBIO[Asset] = {
+    val q: Query[Assets, Asset, Seq] = assets.filter(_.id === id)
+    for {
+      select <- q.result
+      updated <- select.headOption match {
+        case Some(asset) =>
+          q.update(assetToUpdate.copy(id = Some(id)))
+        case None =>
+          assets += Asset(assetToUpdate.id, assetToUpdate.name)
+      }
+    } yield assetToUpdate
+  }
+
+  def assetRemove(id: Int): DBIO[Int] = assets.filter(_.id === id).delete
+
+  def selectAssets(): DBIO[Seq[Asset]] = assets.result
+
+  def selectAsset(id: Int): DBIO[Option[Asset]] =
+    assets.filter(_.id === id).result.headOption
+
+/*******
+ **  Entry exceptions
+ **/
+  def getEntryException(id: Int): DBIO[Option[EntryException]] =
+    entry_exceptions.filter(_.id === id).result.headOption
+
+  def entryExceptionCreate(e: EntryException): DBIO[EntryException] =
+    (entry_exceptions returning entry_exceptions) += e
+
+  def entryExceptionUpdate(
+      id: Int,
+      entryExceptionToUpdate: EntryException): DBIO[EntryException] = {
+    val q: Query[EntryExceptions, EntryException, Seq] =
+      entry_exceptions.filter(_.id === id)
+    for {
+      select <- q.result
+      updated <- select.headOption match {
+        case Some(entryException) =>
+          q.update(entryException.copy(id = Some(id)))
+        case None =>
+          entry_exceptions += entryExceptionToUpdate.copy(id = None)
+      }
+    } yield entryExceptionToUpdate
+  }
+
+  def removeEntryException(id: Int): DBIO[Int] =
+    entry_exceptions.filter(_.id === id).delete
+
+  def getEntryExceptionsByEntry(entry_id: Int): DBIO[Seq[EntryException]] =
+    entry_exceptions.filter(_.entry_id === entry_id).result
+
+/*******
+**  Entries
+********/
+  def getEntry(id: Int): DBIO[Option[Entry]] =
+    entries.filter(_.id === id).result.headOption
+
+  def getEntriesByAsset(asset_id: Int): DBIO[Seq[Entry]] =
+    entries.filter(_.asset_id === asset_id).result
+
+  def selectEntries(): DBIO[Seq[Entry]] = entries.result
+
+  def selectEntry(id: Int): DBIO[Option[Entry]] =
+    entries.filter(_.id === id).result.headOption
+
+  def selectEntryByAsset(asset_id: Int): DBIO[Seq[Entry]] =
+    entries.filter(_.asset_id === asset_id).result
+
+  def entryCreate(e: Entry): DBIO[Entry] =
+    (entries returning entries) += e
+
+  def entryUpdate(id: Int, entryToUpdate: Entry): DBIO[Entry] = {
+    val q: Query[Entries, Entry, Seq] = entries.filter(_.id === id)
+    for {
+      select <- q.result
+      updated <- select.headOption match {
+        case Some(entry) =>
+          q.update(entryToUpdate.copy(id = Some(id)))
+        case None =>
+          entries += entryToUpdate.copy(id = None)
+      }
+    } yield entryToUpdate
+  }
+  def entryRemove(id: Int): DBIO[Int] = entries.filter(_.id === id).delete
+
   def getAppendCount(id: Int): Future[Option[Int]] = db.run {
     assets
       .filter(_.id === id)
