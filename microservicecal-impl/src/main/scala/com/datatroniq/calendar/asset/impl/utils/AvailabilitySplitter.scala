@@ -64,9 +64,11 @@ object AvailabilitySplitter {
             exceptions: List[EntryException]): List[Availability] = {
     entries.map(entry => println(s"${entry.startDateUtc} ${entry.endDateUtc}"))
     entries.map { entry =>
+      println(s"entry ${entry.startDateUtc} ${entry.endDateUtc}")
       val interval =
         new org.joda.time.Interval(entry.startDateUtc, entry.endDateUtc)
       val currentExceptions = exceptions.filter { target =>
+        println(s"currentExceptions ${target.startDateUtc} ${target.endDateUtc}")
         interval.contains(new Interval(target.startDateUtc, target.endDateUtc))
       }
 
@@ -78,7 +80,6 @@ object AvailabilitySplitter {
           end: DateTime,
           otherExceptions: List[EntryException] = List(),
           avaliabities: List[Availability] = List()): List[Availability] = {
-        if (currentExceptions.length > 0) {
           println("otherExceptions.length")
           println(otherExceptions.length)
           if (otherExceptions.length != 0) {
@@ -97,17 +98,17 @@ object AvailabilitySplitter {
             (avaliabities :+ Availability(currentExceptions.last.endDateUtc,
                                           workdayEnd))
           }
-        } else {
-          List(Availability(start, workdayEnd))
-        }
       }
-      val z = generateAvailability(entry.endDateUtc,
+      if (currentExceptions.length > 0) {
+          generateAvailability(entry.endDateUtc,
                                    currentExceptions,
                                    entry.startDateUtc,
                                    entry.endDateUtc,
                                    currentExceptions)
-      Availability(entry.startDateUtc, entry.endDateUtc)
-    }
+      } else {
+          List(Availability(entry.startDateUtc, entry.endDateUtc))
+      }
+    }.flatten
   }
   
   def test() = {
