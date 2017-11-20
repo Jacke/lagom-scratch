@@ -155,6 +155,9 @@ class MicroserviceCalEntityRepository(db: Database, val profile: JdbcProfile)(
  **/
   def getEntryException(id: Int): DBIO[Option[EntryException]] =
     entry_exceptions.filter(_.id === id).result.headOption
+  def getEntriesException(ids: List[Int]): DBIO[Seq[EntryException]] =
+    entry_exceptions.filter(_.id inSetBind ids).result
+
 
   def entryExceptionCreate(e: EntryException): DBIO[EntryException] =
     (entry_exceptions returning entry_exceptions) += e

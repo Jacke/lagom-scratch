@@ -28,6 +28,9 @@ import akka.persistence.query.Offset
 import com.lightbend.lagom.scaladsl.persistence.slick.SlickReadSide
 import _root_.slick.driver.JdbcProfile
 import com.datatroniq.calendar.utils.Formats._
+import com.datatroniq.calendar.utils.AvailabilitySplitter
+import org.joda.time._
+import org.joda.time.format._
 
 trait AvaliabilitiesCalls extends MicroserviceCalService {
   val persistentEntityRegistry: PersistentEntityRegistry
@@ -39,28 +42,42 @@ trait AvaliabilitiesCalls extends MicroserviceCalService {
   override def assetAvailability(assetId: Int) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](
       AssetService.TOPIC_NAME)
-    Future(
-      AssetAvailabilityWrapper(
-        1,
-        List(Availability(org.joda.time.DateTime.now(),
-                          org.joda.time.DateTime.now()),
-             Availability(org.joda.time.DateTime.now(),
-                          org.joda.time.DateTime.now()))
-      ))
+
+    ref.ask(AssetEntries(assetId)).flatMap { _ =>
+      db.run(repository.selectEntryByAsset(assetId)).map(_.toList).flatMap { entries => 
+      db.run(repository.getEntriesException(entries.map(_.id.get).toList)).map(_.toList).map { entry_exceptions =>
+        val availabilities = AvailabilitySplitter.split(entries, entry_exceptions)
+        AssetAvailabilityWrapper(
+          assetId,
+          availabilities
+        )
+        }
+      }
+    }
   }
 
-  override def allAvailabilities() = ServiceCall { request =>
+  override def assetAvailabilityFromTo(assetId: Int, from: String, to: String) = ServiceCall { request =>
     val ref = persistentEntityRegistry.refFor[MicroserviceCalEntity](
       AssetService.TOPIC_NAME)
+    val pattern = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss")
+    val fromDateTime = DateTime.parse(from, pattern)
+    val toDateTime = DateTime.parse(to, pattern)
+    val interval = new org.joda.time.Interval(fromDateTime, toDateTime)
 
-    Future(
-      List(AssetAvailabilityWrapper(
-        1,
-        List(Availability(org.joda.time.DateTime.now(),
-                          org.joda.time.DateTime.now()),
-             Availability(org.joda.time.DateTime.now(),
-                          org.joda.time.DateTime.now())
-      ))))
+ref.ask(AssetEntries(assetId)).flatMap { _ =>
+      db.run(repository.selectEntryByAsset(assetId)).map(_.toList).flatMap { allEntries => 
+      val entries = allEntries.filter { entry => 
+        interval.contains(new Interval(entry.startDateUtc, entry.endDateUtc))
+      }
+      db.run(repository.getEntriesException(entries.map(_.id.get).toList)).map(_.toList).map { entry_exceptions =>
+        val availabilities = AvailabilitySplitter.split(entries, entry_exceptions)
+          AssetAvailabilityWrapper(
+            assetId,
+            availabilities
+          )
+        }
+      }
+    } 
   }
 
 }

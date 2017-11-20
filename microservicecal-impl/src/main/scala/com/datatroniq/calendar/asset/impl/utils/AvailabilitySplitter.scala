@@ -67,15 +67,6 @@ object AvailabilitySplitter {
         new org.joda.time.Interval(entry.startDateUtc, entry.endDateUtc)
       val currentExceptions = exceptions.filter(target =>
         interval.contains(new Interval(target.startDateUtc, target.endDateUtc)))
-      println(interval)
-      println()
-
-      currentExceptions.map { exc =>
-        println("Exception:")
-        println(exc.startDateUtc)
-        println(exc.endDateUtc)
-        println()
-      }
 
       @tailrec
       def generateAvailability(
@@ -113,10 +104,10 @@ object AvailabilitySplitter {
                                    entry.startDateUtc,
                                    entry.endDateUtc,
                                    currentExceptions)
-      println(z)
       Availability(entry.startDateUtc, entry.endDateUtc)
     }
   }
+  
   def test() = {
     val pattern = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss")
     split(

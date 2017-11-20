@@ -46,8 +46,8 @@ trait MicroserviceCalService extends Service {
 
   def assetAvailability(
       assetId: Int): ServiceCall[NotUsed, AssetAvailabilityWrapper]
-  def allAvailabilities(): ServiceCall[NotUsed, List[AssetAvailabilityWrapper]]
 
+  def assetAvailabilityFromTo(assetId: Int, from: String, to: String): ServiceCall[NotUsed, AssetAvailabilityWrapper]
 
   override final def descriptor = {
     import Service._
@@ -68,8 +68,8 @@ trait MicroserviceCalService extends Service {
         restCall(Method.POST, "/api/entry/exception", entryExceptionCreate _),        
         restCall(Method.DELETE, "/api/entry/:entry_id/exception", deleteEntryException _),
 
-        restCall(Method.GET, "/api/asset/:id/availabilities", assetAvailability _),
-        restCall(Method.GET, "/api/availabilities", allAvailabilities _)
+        restCall(Method.GET, "/api/asset/:assetId/availabilities", assetAvailability _),
+        restCall(Method.GET, "/api/asset/:assetId/availabilities/:from/:to", assetAvailabilityFromTo _)
 
       )
       .withAutoAcl(true)

@@ -96,6 +96,15 @@ curl -X POST \
 '
 
 GET /api/asset/:id/availabilities
+
+Return list of availabilities
+
+
+GET /api/asset/:assetId/availabilities/:from/:to
+ 
+Return list of availabilities from to datetime(format: 11/18/2017 08:10:00)
+
+
 ```
 
 

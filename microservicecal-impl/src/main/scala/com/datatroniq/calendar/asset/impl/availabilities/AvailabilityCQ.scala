@@ -18,7 +18,7 @@ import play.api.libs.json.JodaReads._
 import play.api.libs.json.JodaWrites._
 import com.datatroniq.calendar.utils.Formats._
 
-case class Availabilities() extends MicroserviceCalCommand[List[AssetAvailabilityWrapper]]
+case class AvailabilityGetFromTo(asset_id: Int, from: org.joda.time.DateTime, to: org.joda.time.DateTime) extends MicroserviceCalCommand[AssetAvailabilityWrapper]
 case class AvailabilityGet(asset_id: Int) extends MicroserviceCalCommand[AssetAvailabilityWrapper]
 object AvailabilityGet {
   implicit val format: Format[AvailabilityGet] = Json.format
