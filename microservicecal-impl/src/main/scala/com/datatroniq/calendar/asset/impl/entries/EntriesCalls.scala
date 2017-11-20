@@ -11,7 +11,6 @@ import com.lightbend.lagom.scaladsl.persistence.{
   PersistentEntityRegistry
 }
 import org.joda.time.DateTime
-import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}

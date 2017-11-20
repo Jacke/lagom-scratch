@@ -1,20 +1,44 @@
 # Scala micro service: calendar with events for machines, resources
 
 
+## Description
+
+Badass project for employees and managers(business owners) that shows employee availability. Simple, minimalistic and in an easy way. Just create an asset(bookstore, taxi cab) put entries(they can be recurrent such as MON-FRI pattern (without all day entry for now)) and then put all exceptions when you can't work. Put the link to your boss and make all the process transparent. 
+
 
 # Endpoints
 
+## Assets
 ```
+Get asset by ID
 
 GET /api/asset/:id
+
+Get all assets
+
 GET /api/assets
 
 
+Create asset
+
+name: String
+
 POST /api/asset
+
+Update asset
+
+name: String
+
 PUT /api/asset/:id
+
 DELETE /api/asset/:id
 
+```
 
+
+## Entries
+
+```
 GET /api/asset/:id/entries
 curl -X GET \
   http://localhost:9000/api/asset/1/entries \
@@ -56,8 +80,12 @@ curl -X PUT \
 }'
 
 DELETE /api/asset/entry/:id
+```
 
+## Entry exceptions
+When someone couln't participate event they will create exceptions
 
+```
 POST /api/entry/exception
 curl -X POST \
   http://localhost:9000/api/entry/exception \
@@ -68,5 +96,6 @@ curl -X POST \
 '
 
 GET /api/asset/:id/availabilities
-
 ```
+
+
