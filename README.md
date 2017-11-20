@@ -86,6 +86,11 @@ DELETE /api/asset/entry/:id
 When someone couln't participate event they will create exceptions
 
 ```
+Get exceptions by entry id
+GET, "/api/entry/:entry_id/exception
+
+
+Create exception
 POST /api/entry/exception
 curl -X POST \
   http://localhost:9000/api/entry/exception \
@@ -95,12 +100,21 @@ curl -X POST \
   -d '{"entry_id": 2, "startDateUtc": "2017-11-22T12:26:43.511+03:00", "endDateUtc": "2017-11-20T13:25:43.511+03:00"}
 '
 
+Delete exception
+DELETE /api/entry/:entry_id/exception
+
+
+```
+
+## Availabilities
+
+```
 GET /api/asset/:id/availabilities
 
 Return list of availabilities
 
 
-GET /api/asset/:assetId/availabilities/:from/:to
+GET /api/asset/:assetId/availabilities_from/:from/:to
  
 Return list of availabilities from to datetime(format: 11/18/2017 08:10:00)
 

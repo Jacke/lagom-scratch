@@ -62,11 +62,13 @@ object AvailabilitySplitter {
 
   def split(entries: List[Entry],
             exceptions: List[EntryException]): List[Availability] = {
+    entries.map(entry => println(s"${entry.startDateUtc} ${entry.endDateUtc}"))
     entries.map { entry =>
       val interval =
         new org.joda.time.Interval(entry.startDateUtc, entry.endDateUtc)
-      val currentExceptions = exceptions.filter(target =>
-        interval.contains(new Interval(target.startDateUtc, target.endDateUtc)))
+      val currentExceptions = exceptions.filter { target =>
+        interval.contains(new Interval(target.startDateUtc, target.endDateUtc))
+      }
 
       @tailrec
       def generateAvailability(

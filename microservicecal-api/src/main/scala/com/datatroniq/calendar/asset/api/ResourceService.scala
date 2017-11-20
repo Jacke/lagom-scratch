@@ -64,12 +64,12 @@ trait MicroserviceCalService extends Service {
         restCall(Method.PUT, "/api/asset/entry/:id", updateAssetEntry _),
         restCall(Method.DELETE, "/api/asset/entry/:id", deleteAssetEntry _),
 
-        restCall(Method.GET, "/api/entry/:entry_id/exception", getEntryExceptionsByEntry _),
+        restCall(Method.GET, "/api/entry/:entry_id/exceptions", getEntryExceptionsByEntry _),
         restCall(Method.POST, "/api/entry/exception", entryExceptionCreate _),        
         restCall(Method.DELETE, "/api/entry/:entry_id/exception", deleteEntryException _),
 
         restCall(Method.GET, "/api/asset/:assetId/availabilities", assetAvailability _),
-        restCall(Method.GET, "/api/asset/:assetId/availabilities/:from/:to", assetAvailabilityFromTo _)
+        restCall(Method.GET, "/api/asset/:assetId/availabilities_from/:from/:to", assetAvailabilityFromTo _)
 
       )
       .withAutoAcl(true)
