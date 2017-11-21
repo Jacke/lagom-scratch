@@ -5,6 +5,46 @@
 
 Badass project for employees and managers(business owners) that shows employee availability. Simple, minimalistic and in an easy way. Just create an asset(bookstore, taxi cab) put entries(they can be recurrent such as MON-FRI pattern (without all day entry for now)) and then put all exceptions when you can't work. Put the link to your boss and make all the process transparent. 
 
+## Requirements
+Postgres with "postgres" user with postgres password: "12344321"
+sbt(any version)
+java -version
+java version "1.8.0_152"
+
+```
+sudo apt-get install default-jre
+```
+
+## Install, compile and run
+
+Change default password
+```
+sudo -u postgres psql servicecal
+ALTER USER 'postgres' WITH PASSWORD '12344321';
+```
+Then run 
+```
+sbt runAll
+```
+
+Then you should have access to all endpoints of this microservice
+http://localhost:9000/api/*
+
+## Architecture
+
+
+
+## Tests
+
+
+To run all tests you should do previous steps and then after your code was compiled on ```sbt runAll`
+switch back to sbt by using Ctrl-D and then run ```test``` command
+
+To run specific test use 
+```
+testOnly component_nameSpec
+```
+
 
 # Endpoints
 
